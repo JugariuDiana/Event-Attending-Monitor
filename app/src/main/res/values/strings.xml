@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">Kotlin</string>
+    <string name="title_activity_event2">EventActivity2</string>
+    <string name="title_activity_event">EventActivity</string>
+</resources>
