@@ -1,6 +1,7 @@
 package com.example.kotlin.screens
 
 import android.util.Log
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -10,6 +11,8 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.kotlin.LeDeviceListAdapter
@@ -32,12 +35,12 @@ fun BluetoothListScreen(
                 bottom = 15.dp
             )
         ) {
-            item {
-                Text(
-                    text = "Participants",
-                    style = MaterialTheme.typography.titleLarge
-                )
-            }
+//            item {
+//                Text(
+//                    text = "Participants",
+//                    style = MaterialTheme.typography.titleLarge
+//                )
+//            }
 
             Log.d("bleScan", "ble screen devices ${devices.size}")
             items(devices) { device ->
@@ -47,6 +50,22 @@ fun BluetoothListScreen(
                             text = device.id,
                             style = MaterialTheme.typography.titleMedium
                         )
+                    },
+                    Modifier.background(Color.Blue),
+                    supportingContent = {
+                        device.deviceName?.let {
+                            Text(
+                                text = it,
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                        }
+                    },
+                    trailingContent = {
+                        device.advertiseData.let {
+                            Text(text = it.toString(),
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                        }
                     }
                 )
             }

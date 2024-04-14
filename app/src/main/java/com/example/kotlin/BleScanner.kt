@@ -9,6 +9,7 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Handler
 import android.util.Log
+import android.util.SparseArray
 import androidx.core.app.ActivityCompat
 import com.example.kotlin.domain.BleId
 
@@ -112,11 +113,45 @@ class BleScanner (private val context: Context, private val requestPermissions: 
         return leDeviceListAdapter
     }
 
+    fun parseSparseArray(sparseArray: SparseArray<ByteArray>?): ByteArray? {
+        if (sparseArray == null) return null
+
+        val totalSize = sparseArray.size()
+        var totalByteCount = 0
+
+        // Calculate the total byte count
+        for (i in 0 until totalSize) {
+            totalByteCount += sparseArray.valueAt(i)?.size ?: 0
+        }
+
+        // Create a new ByteArray to hold the concatenated data
+        val result = ByteArray(totalByteCount)
+
+        // Copy data from each array into the result array
+        var currentIndex = 0
+        for (i in 0 until totalSize) {
+            val byteArray = sparseArray.valueAt(i)
+            if (byteArray != null) {
+                System.arraycopy(byteArray, 0, result, currentIndex, byteArray.size)
+                currentIndex += byteArray.size
+            }
+        }
+
+        return result
+    }
+
     private val leScanCallback: ScanCallback = object : ScanCallback() {
         override fun onScanResult(callbackType: Int, result: ScanResult) {
             super.onScanResult(callbackType, result)
-//            Log.d("bleScan", "callback ${result.device}")
-            val newDevice = BleId(result.device.address.toString())
+            Log.d("bleScan", "callback ${result.device.toString()}")
+            val deviceName = result.scanRecord?.deviceName
+            val manufacturerData =
+                java.lang.String(parseSparseArray(result.scanRecord?.manufacturerSpecificData))
+            if (result.scanRecord?.deviceName != null)
+                Log.d("bleScan", "callback ${result.device.toString()}")
+
+//            val newDevice = BleId(result.device.address.toString(), (ByteBuffer.wrap(advertiseData)).toString())
+            val newDevice = BleId(result.device.address.toString(), deviceName, manufacturerData)
             leDeviceListAdapter.addDevice(newDevice)
         }
     }
