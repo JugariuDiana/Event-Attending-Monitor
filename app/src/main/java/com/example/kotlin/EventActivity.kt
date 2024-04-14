@@ -53,9 +53,9 @@ fun show(leDeviceListAdapter: LeDeviceListAdapter) {
     Scaffold(
         topBar = {
             TopAppBar(
-                colors = TopAppBarDefaults.smallTopAppBarColors(containerColor = Color.Cyan),
+                colors = TopAppBarDefaults.smallTopAppBarColors(containerColor = Color.Blue),
                 title = {
-                    Text(text = "Smt", color = Color.White)
+                    Text(text = "Participants", color = Color.White)
                 }
             )
         }
