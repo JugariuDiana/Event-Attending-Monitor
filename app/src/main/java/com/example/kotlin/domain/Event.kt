@@ -3,8 +3,8 @@ package com.example.kotlin.domain
 import java.time.LocalTime
 
 class Event (
-    val id: Int? = null,
-    val organizerId: Int? = null,
+    val id: String = "",
+    val organizerId: String = "",
     val name: String = "",
     val location: String = "",
     val availableSeats: Int = 0,

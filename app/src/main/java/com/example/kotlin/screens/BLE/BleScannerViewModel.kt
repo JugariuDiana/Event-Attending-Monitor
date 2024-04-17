@@ -1,4 +1,4 @@
-package com.example.kotlin
+package com.example.kotlin.screens.BLE
 
 import android.Manifest
 import android.bluetooth.BluetoothAdapter
@@ -11,10 +11,12 @@ import android.os.Handler
 import android.util.Log
 import android.util.SparseArray
 import androidx.core.app.ActivityCompat
+import com.example.kotlin.LeDeviceListAdapter
+import com.example.kotlin.RequestPermissions
 import com.example.kotlin.domain.BleId
 
 
-class BleScanner (private val context: Context, private val requestPermissions: RequestPermissions) {
+class BleScannerViewModel (private val context: Context, private val requestPermissions: RequestPermissions) {
     private lateinit var bluetoothAdapter: BluetoothAdapter
     private lateinit var bluetoothLeScanner : BluetoothLeScanner
     private var leDeviceListAdapter = LeDeviceListAdapter()
@@ -29,7 +31,10 @@ class BleScanner (private val context: Context, private val requestPermissions: 
 
 
     fun scan(){
-        scanLeDevice()
+        while (true)
+        {
+            scanLeDevice()
+        }
     }
 
     private fun scanLeDevice() {

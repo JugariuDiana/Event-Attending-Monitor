@@ -1,4 +1,4 @@
-package com.example.kotlin.screens
+package com.example.kotlin.screens.BLE
 
 import android.util.Log
 import androidx.compose.foundation.background
@@ -16,7 +16,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.kotlin.LeDeviceListAdapter
-import com.example.kotlin.domain.BleId
 
 
 @Composable

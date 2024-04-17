@@ -1,7 +1,7 @@
 package com.example.kotlin.domain
 
 data class User (
-    val id: Int? = null,
+    val id: String = "",
     val firstName: String = "",
     val lastName: String = "",
 //    val dateOfBirth: String = "",

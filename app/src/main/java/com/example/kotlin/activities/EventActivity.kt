@@ -1,4 +1,4 @@
-package com.example.kotlin
+package com.example.kotlin.activities
 
 import android.Manifest
 import android.annotation.SuppressLint
@@ -30,12 +30,16 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import com.example.kotlin.screens.BluetoothListScreen
+import com.example.kotlin.screens.BLE.BluetoothListScreen
 import com.example.kotlin.ui.theme.KotlinTheme
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.ui.unit.dp
 import androidx.core.app.ActivityCompat
+import com.example.kotlin.screens.BLE.BleScannerViewModel
+import com.example.kotlin.LOG_TAG
+import com.example.kotlin.LeDeviceListAdapter
+import com.example.kotlin.RequestPermissions
 import java.util.UUID
 
 class EventActivity : ComponentActivity() {
@@ -54,7 +58,7 @@ class EventActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    val bleScanner = BleScanner(context = this@EventActivity, requestPermissions)
+                    val bleScanner = BleScannerViewModel(context = this@EventActivity, requestPermissions)
                     bleScanner.scan()
                     Surface(color = MaterialTheme.colorScheme.background) {
                         advertise()

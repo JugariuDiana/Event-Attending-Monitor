@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "594341465680",
+    "project_id": "license-b0ebe",
+    "storage_bucket": "license-b0ebe.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:594341465680:android:b073868e2c7273220c0b55",
+        "android_client_info": {
+          "package_name": "com.example.kotlin"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAiryHWrRFDJXC257g9uKqSz3MZniuXVL8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
