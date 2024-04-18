@@ -1,7 +1,7 @@
 package com.example.kotlin.screens.signUp
 
 import com.example.kotlin.screens.AppViewModel
-import com.example.kotlin.BLUETOOTH_LIST_SCREEN
+import com.example.kotlin.EVENT_LIST_SCREEN
 import com.example.kotlin.SIGN_UP_SCREEN
 import com.example.kotlin.account.AccountService
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -35,7 +35,7 @@ class SignUpViewModel @Inject constructor(
             }
 
             accountService.signUp(email.value, password.value)
-            openAndPopUp(BLUETOOTH_LIST_SCREEN, SIGN_UP_SCREEN)
+            openAndPopUp(EVENT_LIST_SCREEN, SIGN_UP_SCREEN)
         }
     }
 }

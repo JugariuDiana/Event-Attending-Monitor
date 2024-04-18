@@ -12,6 +12,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.kotlin.screens.eventList.EventListScreen
 import com.example.kotlin.screens.SignIn.SignInScreen
 import com.example.kotlin.screens.signUp.SignUpScreen
 import com.example.kotlin.screens.splash.SplashScreen
@@ -54,6 +55,13 @@ fun NavGraphBuilder.AppGraph(appState: AppState) {
 //            restartApp = { route -> appState.clearAndNavigate(route) }
 //        )
 //    }
+
+    composable(EVENT_LIST_SCREEN){
+        EventListScreen(
+            restartApp = { route -> appState.clearAndNavigate(route) },
+            openScreen = { route -> appState.navigate(route) }
+        )
+    }
 
     composable(SIGN_IN_SCREEN) {
         SignInScreen(openAndPopUp = { route, popUp -> appState.navigateAndPopUp(route, popUp) })

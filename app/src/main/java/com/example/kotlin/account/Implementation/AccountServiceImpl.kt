@@ -1,5 +1,6 @@
 package com.example.kotlin.account.Implementation
 
+import android.util.Log
 import com.example.kotlin.account.AccountService
 import com.example.kotlin.domain.User
 import com.google.firebase.Firebase
@@ -30,6 +31,7 @@ class AccountServiceImpl @Inject constructor() : AccountService {
     }
 
     override suspend fun signIn(email: String, password: String) {
+        Log.d("signIn", "$email + |$password|")
         Firebase.auth.signInWithEmailAndPassword(email, password).await()
     }
 

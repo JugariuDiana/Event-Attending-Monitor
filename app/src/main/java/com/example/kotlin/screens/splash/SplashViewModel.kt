@@ -1,7 +1,7 @@
 package com.example.kotlin.screens.splash
 
 import com.example.kotlin.screens.AppViewModel
-import com.example.kotlin.BLUETOOTH_LIST_SCREEN
+import com.example.kotlin.EVENT_LIST_SCREEN
 import com.example.kotlin.SIGN_IN_SCREEN
 import com.example.kotlin.SPLASH_SCREEN
 import com.example.kotlin.account.AccountService
@@ -14,7 +14,7 @@ class SplashViewModel @Inject constructor(
 ) : AppViewModel() {
 
     fun onAppStart(openAndPopUp: (String, String) -> Unit) {
-        if (accountService.hasUser()) openAndPopUp(BLUETOOTH_LIST_SCREEN, SPLASH_SCREEN)
+        if (accountService.hasUser()) openAndPopUp(EVENT_LIST_SCREEN, SPLASH_SCREEN)
         else openAndPopUp(SIGN_IN_SCREEN, SPLASH_SCREEN)
     }
 }

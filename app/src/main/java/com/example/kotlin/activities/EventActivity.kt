@@ -16,6 +16,7 @@ import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.annotation.RequiresApi
+import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -42,7 +43,7 @@ import com.example.kotlin.LeDeviceListAdapter
 import com.example.kotlin.RequestPermissions
 import java.util.UUID
 
-class EventActivity : ComponentActivity() {
+class EventActivity : AppCompatActivity() {
     companion object {
         private const val REQUEST_BLUETOOTH_PERMISSION = 123
     }

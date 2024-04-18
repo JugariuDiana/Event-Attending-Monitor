@@ -106,8 +106,8 @@ fun SignInScreen(
             ),
             value = password.value,
             onValueChange = { viewModel.updatePassword(it) },
-            placeholder = { Text(stringResource(R.drawable.baseline_lock_24)) },
-            leadingIcon = { Icon(imageVector = Icons.Default.Lock, contentDescription = "Email") },
+            placeholder = { Text(stringResource(R.string.password)) },
+            leadingIcon = { Icon(imageVector = Icons.Default.Lock, contentDescription = "Password") },
             visualTransformation = PasswordVisualTransformation()
         )
 

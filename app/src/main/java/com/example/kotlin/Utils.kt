@@ -6,12 +6,13 @@ const val AUTH_PORT = 9099
 const val FIRESTORE_PORT = 8080
 
 
+const val EVENT_LIST_SCREEN = "EventListScreen"
 const val BLUETOOTH_LIST_SCREEN = "BluetoothListScreen"
-//const val NOTE_SCREEN = "NoteScreen"
+const val EVENT_SCREEN = "EventScreen"
 const val SIGN_IN_SCREEN = "SignInScreen"
 const val SIGN_UP_SCREEN = "SignUpScreen"
 const val SPLASH_SCREEN = "SplashScreen"
 
-//const val NOTE_ID = "noteId"
-//const val NOTE_DEFAULT_ID = "-1"
-//const val NOTE_ID_ARG = "?$NOTE_ID={$NOTE_ID}"
+const val EVENT_ID = "noteId"
+const val EVENT_DEFAULT_ID = "-1"
+const val EVENT_ID_ARG = "?$EVENT_ID={$EVENT_ID}"

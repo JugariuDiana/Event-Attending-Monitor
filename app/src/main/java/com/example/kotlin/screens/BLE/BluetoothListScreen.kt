@@ -34,13 +34,6 @@ fun BluetoothListScreen(
                 bottom = 15.dp
             )
         ) {
-//            item {
-//                Text(
-//                    text = "Participants",
-//                    style = MaterialTheme.typography.titleLarge
-//                )
-//            }
-
             Log.d("bleScan", "ble screen devices ${devices.size}")
             items(devices) { device ->
                 ListItem(

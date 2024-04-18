@@ -1,9 +1,12 @@
 package com.example.kotlin.account
 
-//interface StorageService {
-//    val notes: Flow<List<Note>>
-//    suspend fun createNote(note: Note)
-//    suspend fun readNote(noteId: String): Note?
-//    suspend fun updateNote(note: Note)
-//    suspend fun deleteNote(noteId: String)
-//}
+import com.example.kotlin.domain.Event
+import kotlinx.coroutines.flow.Flow
+
+interface StorageService {
+    val events: Flow<List<Event>>
+    suspend fun createEvent(event: Event)
+    suspend fun readEvent(eventId: String): Event?
+    suspend fun updateEvent(event: Event)
+    suspend fun deleteEvent(eventId: String)
+}
