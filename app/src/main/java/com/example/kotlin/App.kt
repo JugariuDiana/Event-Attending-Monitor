@@ -36,6 +36,7 @@ fun kotlinApp() {
         }
     }
 }
+//ToDO check the get status to see problems with spaces at the end
 
 @Composable
 fun rememberAppState(navController: NavHostController = rememberNavController()) =
