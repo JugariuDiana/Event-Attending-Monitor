@@ -25,7 +25,7 @@ class LeDeviceListAdapter:ViewModel() {
     fun addDevice(device: BleId) {
 //        Log.d("bleScan", "adding device + ${device.id}")
         val currentList = _deviceList.value
-        if (currentList.none { it.id == device.id }) {
+        if (currentList.none { it.advertiseData == device.advertiseData }) {
             _deviceList.value = currentList + device
         }
 

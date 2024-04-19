@@ -24,7 +24,6 @@ fun BluetoothListScreen(
     deviceListAdaptor: LeDeviceListAdapter
 ) {
     Surface {
-//        val bleDevices = listOf<BleId>(BleId("11"), BleId("12"), BleId("15"))
         val devices by deviceListAdaptor.deviceList.collectAsStateWithLifecycle(emptyList())
         Log.d("bleScan", "devices ${devices.size}")
         LazyColumn(
@@ -35,13 +34,6 @@ fun BluetoothListScreen(
                 bottom = 15.dp
             )
         ) {
-//            item {
-//                Text(
-//                    text = "Participants",
-//                    style = MaterialTheme.typography.titleLarge
-//                )
-//            }
-
             Log.d("bleScan", "ble screen devices ${devices.size}")
             items(devices) { device ->
                 ListItem(
@@ -53,19 +45,7 @@ fun BluetoothListScreen(
                     },
                     Modifier.background(Color.Blue),
                     supportingContent = {
-                        device.deviceName?.let {
-                            Text(
-                                text = it,
-                                style = MaterialTheme.typography.bodyMedium
-                            )
-                        }
-                    },
-                    trailingContent = {
-                        device.advertiseData.let {
-                            Text(text = it.toString(),
-                                style = MaterialTheme.typography.bodyMedium
-                            )
-                        }
+                        Text(text = device.deviceName + " " + device.advertiseData)
                     }
                 )
             }
