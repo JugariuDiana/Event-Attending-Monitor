@@ -17,8 +17,10 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
@@ -30,12 +32,10 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import com.example.kotlin.screens.BluetoothListScreen
-import com.example.kotlin.ui.theme.KotlinTheme
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.height
 import androidx.compose.ui.unit.dp
 import androidx.core.app.ActivityCompat
+import com.example.kotlin.screens.BluetoothListScreen
+import com.example.kotlin.ui.theme.KotlinTheme
 import java.util.UUID
 
 class EventActivity : ComponentActivity() {
@@ -43,7 +43,8 @@ class EventActivity : ComponentActivity() {
         private const val REQUEST_BLUETOOTH_PERMISSION = 123
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
+
+    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val requestPermissions = RequestPermissions(context = this@EventActivity, activity = this)
@@ -65,9 +66,12 @@ class EventActivity : ComponentActivity() {
         }
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
+
+    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     fun advertise(){
         val advertiser = BluetoothAdapter.getDefaultAdapter().bluetoothLeAdvertiser
+        val parcelUuid = ParcelUuid(UUID.fromString("1b43d840-f655-44c0-b25b-ba00b0a77ce5"))
+        //TODO here set parcel UUID to be the UUID id of the user
 
         val parameters = AdvertisingSetParameters.Builder()
             .setLegacyMode(true) // True by default, but set here as a reminder.
@@ -78,11 +82,11 @@ class EventActivity : ComponentActivity() {
             .build()
 
 
-        val deviceId = Settings.Secure.getString(contentResolver, Settings.Secure.ANDROID_ID);
+        val deviceId = Settings.Secure.getString(contentResolver, Settings.Secure.ANDROID_ID)
+
         val data = AdvertiseData.Builder()
-            .setIncludeDeviceName(true)
-//                .addTransportDiscoveryData(TransportDiscoveryData("143252".toByteArray()))
-            .addManufacturerData(15, "15823".toByteArray(Charsets.UTF_8))
+            .setIncludeDeviceName(false)
+            .addServiceUuid(parcelUuid)
             .build()
 
         lateinit var currentAdvertisingSet: AdvertisingSet
@@ -116,7 +120,8 @@ class EventActivity : ComponentActivity() {
                     AdvertiseData.Builder().setIncludeDeviceName(true).setIncludeTxPowerLevel(true).build()
                 )
                 currentAdvertisingSet.setScanResponseData(
-                    AdvertiseData.Builder().addServiceUuid(ParcelUuid(UUID.randomUUID())).build()
+//                    AdvertiseData.Builder().addServiceUuid(ParcelUuid(UUID.randomUUID())).build()
+                    AdvertiseData.Builder().addServiceUuid(parcelUuid).build()
                 )
             }
 
