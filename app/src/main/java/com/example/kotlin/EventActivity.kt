@@ -2,11 +2,14 @@ package com.example.kotlin
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.app.AlertDialog
 import android.bluetooth.BluetoothAdapter
+import android.bluetooth.BluetoothManager
 import android.bluetooth.le.AdvertiseData
 import android.bluetooth.le.AdvertisingSet
 import android.bluetooth.le.AdvertisingSetCallback
 import android.bluetooth.le.AdvertisingSetParameters
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
@@ -30,42 +33,118 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.core.app.ActivityCompat
+import com.example.kotlin.databinding.ActivityMainBinding
 import com.example.kotlin.screens.BluetoothListScreen
 import com.example.kotlin.ui.theme.KotlinTheme
+import com.google.android.material.snackbar.Snackbar
+import pub.devrel.easypermissions.EasyPermissions
 import java.util.UUID
 
-class EventActivity : ComponentActivity() {
+
+class EventActivity : ComponentActivity(), EasyPermissions.PermissionCallbacks{
+    lateinit var  binding: ActivityMainBinding
+
     companion object {
         private const val REQUEST_BLUETOOTH_PERMISSION = 123
     }
 
+    var requestPermissions = RequestPermissions(context = this@EventActivity, activity = this)
+    var permissionGranted by mutableStateOf(false)
+    lateinit var bleScanner: BleScanner
 
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val requestPermissions = RequestPermissions(context = this@EventActivity, activity = this)
 
         setContent {
             KotlinTheme {
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.background
-                ) {
-                    val bleScanner = BleScanner(context = this@EventActivity, requestPermissions)
-                    bleScanner.scan()
-                    Surface(color = MaterialTheme.colorScheme.background) {
-                        advertise()
-                        show(bleScanner.getLeDeviceListAdapter())
+                if (!hasPermissions())
+                    requestPermissionsForScan()
+                permissionGranted = hasPermissions()
+                if (permissionGranted) {
+                    bleScanner = BleScanner(context = this@EventActivity, requestPermissions, this)
+                    Surface(
+                        modifier = Modifier.fillMaxSize(),
+                        color = MaterialTheme.colorScheme.background
+                    ) {
+                        Surface(color = MaterialTheme.colorScheme.background) {
+                            advertise()
+                            bleScanner.scan()
+                            show(bleScanner.getLeDeviceListAdapter())
+                        }
                     }
                 }
             }
         }
     }
 
+    @RequiresApi(Build.VERSION_CODES.S)
+    fun hasPermissions(): Boolean {
+        return EasyPermissions.hasPermissions(
+            this,
+            Manifest.permission.BLUETOOTH_SCAN,
+            Manifest.permission.ACCESS_FINE_LOCATION,
+            Manifest.permission.ACCESS_COARSE_LOCATION,
+            Manifest.permission.BLUETOOTH_ADVERTISE,
+        )
+    }
+
+    @RequiresApi(Build.VERSION_CODES.S)
+    fun requestPermissionsForScan(){
+        EasyPermissions.requestPermissions(
+            this,
+            "Bluetooth and Location permissions",
+            PERMISSION_REQUEST_CODE,
+            Manifest.permission.BLUETOOTH_SCAN,
+            Manifest.permission.ACCESS_FINE_LOCATION,
+            Manifest.permission.ACCESS_COARSE_LOCATION,
+        )
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        EasyPermissions.onRequestPermissionsResult(requestCode, permissions, grantResults, this)
+    }
+
+    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
+    override fun onPermissionsGranted(requestCode: Int, perms: MutableList<String>) {
+        permissionGranted = true
+        advertise()
+        bleScanner.scan()
+    }
+
+    override fun onPermissionsDenied(requestCode: Int, perms: MutableList<String>) {
+        if (EasyPermissions.somePermissionPermanentlyDenied(this, perms)) {
+            val builder = AlertDialog.Builder(this)
+            builder.setTitle("Permissions Required")
+            builder.setMessage("Bluetooth and Location permissions are necessary for scanning and advertising devices. Please grant permissions in Settings.")
+            builder.setPositiveButton("Settings") { _, _ ->
+                EasyPermissions.openAppSettings(this)
+            }
+            builder.setNegativeButton("Cancel") { dialog, _ ->
+                dialog.dismiss()
+            }
+            builder.create().show()
+        } else {
+            // User denied permissions but hasn't selected "Never ask again"
+            Snackbar.make(
+                findViewById(android.R.id.content),
+                "Permissions Denied. Please grant permissions to continue.",
+                Snackbar.LENGTH_LONG
+            ).show()
+        }
+    }
 
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     fun advertise(){
@@ -107,20 +186,18 @@ class EventActivity : ComponentActivity() {
                         Manifest.permission.BLUETOOTH_ADVERTISE
                     ) != PackageManager.PERMISSION_GRANTED
                 ) {
-                    // TODO: Consider calling
-                    //    ActivityCompat#requestPermissions
-                    // here to request the missing permissions, and then overriding
-                    //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-                    //                                          int[] grantResults)
-                    // to handle the case where the user grants the permission. See the documentation
-                    // for ActivityCompat#requestPermissions for more details.
+                    EasyPermissions.requestPermissions(
+                        this@EventActivity,
+                        "Bluetooth and Location permissions",
+                        PERMISSION_REQUEST_CODE,
+                        Manifest.permission.BLUETOOTH_ADVERTISE,
+                    )
                     return
                 }
                 currentAdvertisingSet.setAdvertisingData(
                     AdvertiseData.Builder().setIncludeDeviceName(true).setIncludeTxPowerLevel(true).build()
                 )
                 currentAdvertisingSet.setScanResponseData(
-//                    AdvertiseData.Builder().addServiceUuid(ParcelUuid(UUID.randomUUID())).build()
                     AdvertiseData.Builder().addServiceUuid(parcelUuid).build()
                 )
             }
@@ -139,6 +216,22 @@ class EventActivity : ComponentActivity() {
         }
 
         advertiser.startAdvertisingSet(parameters, data, null, null, null, callback)
+    }
+
+    fun startBluetooth() {
+        val bluetoothManager: BluetoothManager = getSystemService(BluetoothManager::class.java)
+        val bluetoothAdapter: BluetoothAdapter? = bluetoothManager.getAdapter()
+        if (bluetoothAdapter?.isEnabled == false) {
+            val enableBtIntent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
+            if (ActivityCompat.checkSelfPermission(
+                    this,
+                    Manifest.permission.BLUETOOTH_CONNECT
+                ) != PackageManager.PERMISSION_GRANTED
+            ) {
+                return
+            }
+            startActivityForResult(enableBtIntent, PERMISSION_REQUEST_CODE)
+        }
     }
 }
 
@@ -166,4 +259,3 @@ fun show(leDeviceListAdapter: LeDeviceListAdapter) {
         }
     }
 }
-

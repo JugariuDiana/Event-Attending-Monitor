@@ -6,6 +6,7 @@ import android.bluetooth.le.BluetoothLeScanner
 import android.bluetooth.le.ScanCallback
 import android.bluetooth.le.ScanResult
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Handler
@@ -13,10 +14,12 @@ import android.util.Log
 import android.util.SparseArray
 import androidx.annotation.RequiresApi
 import androidx.core.app.ActivityCompat
+import androidx.core.app.ActivityCompat.startActivityForResult
 import com.example.kotlin.domain.BleId
+import pub.devrel.easypermissions.EasyPermissions
 
 
-class BleScanner (private val context: Context, private val requestPermissions: RequestPermissions) {
+class BleScanner (private val context: Context, private val requestPermissions: RequestPermissions, private val activity: EventActivity) {
     private lateinit var bluetoothAdapter: BluetoothAdapter
     private lateinit var bluetoothLeScanner : BluetoothLeScanner
     private var leDeviceListAdapter = LeDeviceListAdapter()
@@ -30,10 +33,12 @@ class BleScanner (private val context: Context, private val requestPermissions: 
     }
 
 
+    @RequiresApi(Build.VERSION_CODES.S)
     fun scan(){
         scanLeDevice()
     }
 
+    @RequiresApi(Build.VERSION_CODES.S)
     private fun scanLeDevice() {
         Log.d("bleScan", "scanLeDevice: $scanning")
         if (!scanning) { // Stops scanning after a pre-defined scan period.
@@ -45,31 +50,29 @@ class BleScanner (private val context: Context, private val requestPermissions: 
                         Manifest.permission.BLUETOOTH_SCAN
                     ) != PackageManager.PERMISSION_GRANTED
                 ) {
-                    // TODO: Consider calling
-                    //    ActivityCompat#requestPermissions
-                    Log.d("bleScan", "BLUETOOTH_SCAN")
-                    requestPermissions.requestBluetoothScanPermission()
-                    // here to request the missing permissions, and then overriding
-                    //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-                    //                                          int[] grantResults)
-                    // to handle the case where the user grants the permission. See the documentation
-                    // for ActivityCompat#requestPermissions for more details.
-                    return@postDelayed
+                    EasyPermissions.requestPermissions(
+                        activity,
+                        "Bluetooth and Location permissions",
+                        PERMISSION_REQUEST_CODE,
+                        Manifest.permission.BLUETOOTH_SCAN,
+                    )
+//                    Log.d("bleScan", "BLUETOOTH_SCAN")
+//                    requestPermissions.requestBluetoothScanPermission()
+                     return@postDelayed
                 }
                 if (ActivityCompat.checkSelfPermission(
                         context,
                         Manifest.permission.ACCESS_FINE_LOCATION
                     ) != PackageManager.PERMISSION_GRANTED
                 ) {
-                    // TODO: Consider calling
-                    //    ActivityCompat#requestPermissions
-                    Log.d("bleScan", "ACCESS_FINE_LOCATION")
-                    requestPermissions.requestBluetoothAccessFineLocationPermission()
-                    // here to request the missing permissions, and then overriding
-                    //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-                    //                                          int[] grantResults)
-                    // to handle the case where the user grants the permission. See the documentation
-                    // for ActivityCompat#requestPermissions for more details.
+                    EasyPermissions.requestPermissions(
+                        activity,
+                        "Bluetooth and Location permissions",
+                        PERMISSION_REQUEST_CODE,
+                        Manifest.permission.ACCESS_FINE_LOCATION,
+                    )
+//                    Log.d("bleScan", "ACCESS_FINE_LOCATION")
+//                    requestPermissions.requestBluetoothAccessFineLocationPermission()
                     return@postDelayed
                 }
                 if (ActivityCompat.checkSelfPermission(
@@ -77,33 +80,20 @@ class BleScanner (private val context: Context, private val requestPermissions: 
                         Manifest.permission.ACCESS_COARSE_LOCATION
                     ) != PackageManager.PERMISSION_GRANTED
                 ) {
-                    // TODO: Consider calling
-                    //    ActivityCompat#requestPermissions
-                    Log.d("bleScan", "ACCESS_COARSE_LOCATION")
-                    requestPermissions.requestBluetoothAccessCoarseLocationPermission()
-                    // here to request the missing permissions, and then overriding
-                    //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-                    //                                          int[] grantResults)
-                    // to handle the case where the user grants the permission. See the documentation
-                    // for ActivityCompat#requestPermissions for more details.
+                    EasyPermissions.requestPermissions(
+                        activity,
+                        "Bluetooth and Location permissions",
+                        PERMISSION_REQUEST_CODE,
+                        Manifest.permission.ACCESS_COARSE_LOCATION,
+                    )
+//                    Log.d("bleScan", "ACCESS_COARSE_LOCATION")
+//                    requestPermissions.requestBluetoothAccessCoarseLocationPermission()
                     return@postDelayed
                 }
-                Log.d("bleScan", "stop scan")
-//                if (EasyPermissions.hasPermissions(
-//                        context,
-//                        Manifest.permission.BLUETOOTH_SCAN,
-//                        Manifest.permission.ACCESS_FINE_LOCATION,
-//                        Manifest.permission.ACCESS_COARSE_LOCATION,
-//                    )) {
-//                    bluetoothLeScanner.startScan(leScanCallback)
-//                }
-//                else {
-//                    activity.requestPermissionsForScan()
-//                }
                 bluetoothLeScanner.stopScan(leScanCallback)
             }, SCAN_PERIOD)
             scanning = true
-            Log.d("bleScan", "start scan")
+//            Log.d("bleScan", "start scan")
             bluetoothLeScanner.startScan(leScanCallback)
         } else {
             scanning = false
@@ -115,45 +105,13 @@ class BleScanner (private val context: Context, private val requestPermissions: 
         return leDeviceListAdapter
     }
 
-    fun parseSparseArray(sparseArray: SparseArray<ByteArray>?): ByteArray? {
-        if (sparseArray == null) return null
-
-        val totalSize = sparseArray.size()
-        var totalByteCount = 0
-
-        // Calculate the total byte count
-        for (i in 0 until totalSize) {
-            totalByteCount += sparseArray.valueAt(i)?.size ?: 0
-        }
-
-        // Create a new ByteArray to hold the concatenated data
-        val result = ByteArray(totalByteCount)
-
-        // Copy data from each array into the result array
-        var currentIndex = 0
-        for (i in 0 until totalSize) {
-            val byteArray = sparseArray.valueAt(i)
-            if (byteArray != null) {
-                System.arraycopy(byteArray, 0, result, currentIndex, byteArray.size)
-                currentIndex += byteArray.size
-            }
-        }
-
-        return result
-    }
-
     private val leScanCallback: ScanCallback = object : ScanCallback() {
         @RequiresApi(Build.VERSION_CODES.Q)
         override fun onScanResult(callbackType: Int, result: ScanResult) {
             super.onScanResult(callbackType, result)
-            Log.d("bleScan", "callback ${result.device.toString()}")
-            val deviceName = result.scanRecord?.deviceName
-//            var data = java.lang.String("")
-//            if (result.scanRecord?.serviceUuids?.size!! > 0)
-//                data =
-//                    java.lang.String(result.scanRecord?.serviceUuids?.get(0).toString())
-//            val data = String(result.scanRecord?.serviceUuids?.get(0))
+            Log.d("bleScan", "callback ${result.device}")
 
+            val deviceName = result.scanRecord?.deviceName
 
             val scanRecord = result.scanRecord
             var data = java.lang.String("")
@@ -166,8 +124,7 @@ class BleScanner (private val context: Context, private val requestPermissions: 
             if (result.scanRecord?.deviceName != null)
                 Log.d("bleScan", "callback ${result.device.toString()}")
 
-//            val newDevice = BleId(result.device.address.toString(), (ByteBuffer.wrap(advertiseData)).toString())
-            val newDevice = BleId(result.device.address.toString(), deviceName, data)
+             val newDevice = BleId(result.device.address.toString(), deviceName, data)
             leDeviceListAdapter.addDevice(newDevice)
         }
     }
