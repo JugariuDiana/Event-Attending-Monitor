@@ -19,7 +19,7 @@ import com.example.kotlin.domain.BleId
 import pub.devrel.easypermissions.EasyPermissions
 
 
-class BleScanner (private val context: Context, private val requestPermissions: RequestPermissions, private val activity: EventActivity) {
+class BleScanner (private val context: Context, private val activity: EventActivity) {
     private lateinit var bluetoothAdapter: BluetoothAdapter
     private lateinit var bluetoothLeScanner : BluetoothLeScanner
     private var leDeviceListAdapter = LeDeviceListAdapter()

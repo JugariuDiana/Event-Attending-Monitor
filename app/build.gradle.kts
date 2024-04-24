@@ -53,7 +53,6 @@ android {
 }
 
 dependencies {
-    implementation("androidx.settings:app_settings:1.2.0")
     implementation("pub.devrel:easypermissions:3.0.0")
     implementation("androidx.core:core-ktx:1.12.0")
     implementation("androidx.appcompat:appcompat:1.6.1")

@@ -11,6 +11,7 @@ import android.bluetooth.le.AdvertisingSetCallback
 import android.bluetooth.le.AdvertisingSetParameters
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.ParcelUuid
@@ -55,7 +56,6 @@ class EventActivity : ComponentActivity(), EasyPermissions.PermissionCallbacks{
         private const val REQUEST_BLUETOOTH_PERMISSION = 123
     }
 
-    var requestPermissions = RequestPermissions(context = this@EventActivity, activity = this)
     var permissionGranted by mutableStateOf(false)
     lateinit var bleScanner: BleScanner
 
@@ -69,7 +69,7 @@ class EventActivity : ComponentActivity(), EasyPermissions.PermissionCallbacks{
                     requestPermissionsForScan()
                 permissionGranted = hasPermissions()
                 if (permissionGranted) {
-                    bleScanner = BleScanner(context = this@EventActivity, requestPermissions, this)
+                    bleScanner = BleScanner(context = this@EventActivity, this)
                     Surface(
                         modifier = Modifier.fillMaxSize(),
                         color = MaterialTheme.colorScheme.background
@@ -92,7 +92,6 @@ class EventActivity : ComponentActivity(), EasyPermissions.PermissionCallbacks{
             Manifest.permission.BLUETOOTH_SCAN,
             Manifest.permission.ACCESS_FINE_LOCATION,
             Manifest.permission.ACCESS_COARSE_LOCATION,
-            Manifest.permission.BLUETOOTH_ADVERTISE,
         )
     }
 
@@ -130,7 +129,10 @@ class EventActivity : ComponentActivity(), EasyPermissions.PermissionCallbacks{
             builder.setTitle("Permissions Required")
             builder.setMessage("Bluetooth and Location permissions are necessary for scanning and advertising devices. Please grant permissions in Settings.")
             builder.setPositiveButton("Settings") { _, _ ->
-                EasyPermissions.openAppSettings(this)
+                val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
+                val uri = Uri.fromParts("package", packageName, null)
+                intent.setData(uri)
+                startActivity(intent)
             }
             builder.setNegativeButton("Cancel") { dialog, _ ->
                 dialog.dismiss()
