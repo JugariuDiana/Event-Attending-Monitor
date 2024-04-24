@@ -13,13 +13,14 @@ import android.os.Bundle
 import android.os.ParcelUuid
 import android.provider.Settings
 import android.util.Log
-import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
@@ -31,16 +32,14 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import com.example.kotlin.screens.BLE.BluetoothListScreen
-import com.example.kotlin.ui.theme.KotlinTheme
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.height
 import androidx.compose.ui.unit.dp
 import androidx.core.app.ActivityCompat
-import com.example.kotlin.screens.BLE.BleScannerViewModel
 import com.example.kotlin.LOG_TAG
 import com.example.kotlin.LeDeviceListAdapter
 import com.example.kotlin.RequestPermissions
+import com.example.kotlin.screens.BLE.BleScannerViewModel
+import com.example.kotlin.screens.BLE.BluetoothListScreen
+import com.example.kotlin.ui.theme.KotlinTheme
 import java.util.UUID
 
 class EventActivity : AppCompatActivity() {
@@ -48,7 +47,8 @@ class EventActivity : AppCompatActivity() {
         private const val REQUEST_BLUETOOTH_PERMISSION = 123
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
+
+    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val requestPermissions = RequestPermissions(context = this@EventActivity, activity = this)
@@ -70,9 +70,12 @@ class EventActivity : AppCompatActivity() {
         }
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
+
+    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     fun advertise(){
         val advertiser = BluetoothAdapter.getDefaultAdapter().bluetoothLeAdvertiser
+        val parcelUuid = ParcelUuid(UUID.fromString("1b43d840-f655-44c0-b25b-ba00b0a77ce5"))
+        //TODO here set parcel UUID to be the UUID id of the user
 
         val parameters = AdvertisingSetParameters.Builder()
             .setLegacyMode(true) // True by default, but set here as a reminder.
@@ -83,11 +86,11 @@ class EventActivity : AppCompatActivity() {
             .build()
 
 
-        val deviceId = Settings.Secure.getString(contentResolver, Settings.Secure.ANDROID_ID);
+        val deviceId = Settings.Secure.getString(contentResolver, Settings.Secure.ANDROID_ID)
+
         val data = AdvertiseData.Builder()
-            .setIncludeDeviceName(true)
-//                .addTransportDiscoveryData(TransportDiscoveryData("143252".toByteArray()))
-            .addManufacturerData(15, "15823".toByteArray(Charsets.UTF_8))
+            .setIncludeDeviceName(false)
+            .addServiceUuid(parcelUuid)
             .build()
 
         lateinit var currentAdvertisingSet: AdvertisingSet
@@ -121,7 +124,8 @@ class EventActivity : AppCompatActivity() {
                     AdvertiseData.Builder().setIncludeDeviceName(true).setIncludeTxPowerLevel(true).build()
                 )
                 currentAdvertisingSet.setScanResponseData(
-                    AdvertiseData.Builder().addServiceUuid(ParcelUuid(UUID.randomUUID())).build()
+//                    AdvertiseData.Builder().addServiceUuid(ParcelUuid(UUID.randomUUID())).build()
+                    AdvertiseData.Builder().addServiceUuid(parcelUuid).build()
                 )
             }
 

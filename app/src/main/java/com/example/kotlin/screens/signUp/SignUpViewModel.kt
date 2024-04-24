@@ -12,9 +12,14 @@ import javax.inject.Inject
 class SignUpViewModel @Inject constructor(
     private val accountService: AccountService
 ) : AppViewModel() {
+    val name = MutableStateFlow("")
     val email = MutableStateFlow("")
     val password = MutableStateFlow("")
     val confirmPassword = MutableStateFlow("")
+
+    fun updateName(newName: String){
+        name.value = newName
+    }
 
     fun updateEmail(newEmail: String) {
         email.value = newEmail
@@ -33,7 +38,7 @@ class SignUpViewModel @Inject constructor(
             if (password.value != confirmPassword.value) {
                 throw Exception("Passwords do not match")
             }
-
+            //ToDo create a new user containing all information and generate a unique uuid for him
             accountService.signUp(email.value, password.value)
             openAndPopUp(EVENT_LIST_SCREEN, SIGN_UP_SCREEN)
         }
