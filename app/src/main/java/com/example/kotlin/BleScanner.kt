@@ -6,15 +6,12 @@ import android.bluetooth.le.BluetoothLeScanner
 import android.bluetooth.le.ScanCallback
 import android.bluetooth.le.ScanResult
 import android.content.Context
-import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Handler
 import android.util.Log
-import android.util.SparseArray
 import androidx.annotation.RequiresApi
 import androidx.core.app.ActivityCompat
-import androidx.core.app.ActivityCompat.startActivityForResult
 import com.example.kotlin.domain.BleId
 import pub.devrel.easypermissions.EasyPermissions
 
@@ -53,7 +50,7 @@ class BleScanner (private val context: Context, private val activity: EventActiv
                     EasyPermissions.requestPermissions(
                         activity,
                         "Bluetooth and Location permissions",
-                        PERMISSION_REQUEST_CODE,
+                        PERMISSION_REQUEST_BLUETOOTH_CODE,
                         Manifest.permission.BLUETOOTH_SCAN,
                     )
 //                    Log.d("bleScan", "BLUETOOTH_SCAN")
@@ -68,7 +65,7 @@ class BleScanner (private val context: Context, private val activity: EventActiv
                     EasyPermissions.requestPermissions(
                         activity,
                         "Bluetooth and Location permissions",
-                        PERMISSION_REQUEST_CODE,
+                        PERMISSION_REQUEST_BLUETOOTH_CODE,
                         Manifest.permission.ACCESS_FINE_LOCATION,
                     )
 //                    Log.d("bleScan", "ACCESS_FINE_LOCATION")
@@ -83,7 +80,7 @@ class BleScanner (private val context: Context, private val activity: EventActiv
                     EasyPermissions.requestPermissions(
                         activity,
                         "Bluetooth and Location permissions",
-                        PERMISSION_REQUEST_CODE,
+                        PERMISSION_REQUEST_BLUETOOTH_CODE,
                         Manifest.permission.ACCESS_COARSE_LOCATION,
                     )
 //                    Log.d("bleScan", "ACCESS_COARSE_LOCATION")
