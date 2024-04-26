@@ -31,12 +31,13 @@ class AccountServiceImpl @Inject constructor() : AccountService {
     }
 
     override suspend fun signIn(email: String, password: String) {
-        Log.d("signIn", "$email + |$password|")
+//        Log.d("signIn", "$email + |$password|")
         Firebase.auth.signInWithEmailAndPassword(email, password).await()
     }
 
     override suspend fun signUp(email: String, password: String) {
-        Firebase.auth.createUserWithEmailAndPassword(email, password).await()
+        val result = Firebase.auth.createUserWithEmailAndPassword(email, password).await()
+//        Log.d("bleScan", result.toString())
     }
 
     override suspend fun signOut() {

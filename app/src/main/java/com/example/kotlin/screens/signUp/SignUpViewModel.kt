@@ -33,7 +33,15 @@ class SignUpViewModel @Inject constructor(
         confirmPassword.value = newConfirmPassword
     }
 
+    fun cleanData(){
+        email.value = email.value.trim()
+        name.value = name.value.trim()
+        password.value = password.value.trim()
+        confirmPassword.value = confirmPassword.value.trim()
+    }
+
     fun onSignUpClick(openAndPopUp: (String, String) -> Unit) {
+        cleanData()
         launchCatching {
             if (password.value != confirmPassword.value) {
                 throw Exception("Passwords do not match")

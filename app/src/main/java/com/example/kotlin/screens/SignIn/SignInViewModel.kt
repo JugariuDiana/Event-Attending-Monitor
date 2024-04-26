@@ -24,9 +24,14 @@ class SignInViewModel @Inject constructor(
         password.value = newPassword
     }
 
+    fun cleanData(){
+        email.value = email.value.trim()
+        password.value = password.value.trim()
+    }
+
     fun onSignInClick(openAndPopUp: (String, String) -> Unit){
         launchCatching {
-            password.value = password.value.trim()
+            cleanData()
             accountService.signIn(email.value, password.value)
             openAndPopUp(EVENT_LIST_SCREEN, SIGN_IN_SCREEN)
         }
