@@ -105,7 +105,7 @@ fun EventListScreen(
                     items(events, key = { it.id }) { eventItem ->
                         EventItem(
                             event = eventItem,
-                            onActionClick = { viewModel.onNoteClick(openScreen, eventItem) }
+                            onActionClick = { viewModel.onEventClick(openScreen, eventItem) }
                         )
                     }
                 }
@@ -171,7 +171,7 @@ fun EventItem(
                 .clickable { onActionClick(event.id) }
         ) {
             Text(
-                text = event.getName(),
+                text = event.getName() + " " + event.location,
                 modifier = Modifier.padding(12.dp, 12.dp, 12.dp, 12.dp),
                 style = MaterialTheme.typography.bodyLarge
             )

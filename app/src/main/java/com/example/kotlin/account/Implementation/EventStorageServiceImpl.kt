@@ -101,7 +101,9 @@ class EventStorageServiceImpl @Inject constructor(private val auth: AccountServi
     }
 
     override suspend fun readEvent(eventId: String): Event? {
-        return eventsLocation.child(eventId).get().await().getValue(Event::class.java)
+        val result = eventsLocation.child(eventId).get().await()
+        val res = result.getValue(Event::class.java)
+        return res
     }
 
     override suspend fun updateEvent(event: Event) {

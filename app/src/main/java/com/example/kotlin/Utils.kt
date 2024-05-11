@@ -15,9 +15,7 @@ const val SIGN_UP_SCREEN = "SignUpScreen"
 const val SPLASH_SCREEN = "SplashScreen"
 const val EVENTS_COLLECTION = "events"
 
-const val EVENT_ID = "noteId"
+const val EVENT_ID = "eventId"
 const val EVENT_DEFAULT_ID = "-1"
 const val ORGANIZER_DEFAULT_ID = "-1"
-const val EVENT_ID_ARG = "?$EVENT_ID={$EVENT_ID}"
-
-const val EVENTS_DB = "EventsInformation"
+//const val EVENT_ID_ARG = "?$EVENT_ID={$EVENT_ID}"

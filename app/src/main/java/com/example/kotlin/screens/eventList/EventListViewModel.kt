@@ -1,17 +1,12 @@
 package com.example.kotlin.screens.eventList
 
-import android.util.Log
 import com.example.kotlin.ADD_EVENT_SCREEN
-import com.example.kotlin.EVENT_DEFAULT_ID
-import com.example.kotlin.EVENT_ID
 import com.example.kotlin.EVENT_SCREEN
 import com.example.kotlin.SPLASH_SCREEN
 import com.example.kotlin.account.AccountService
 import com.example.kotlin.account.EventStorageService
 import com.example.kotlin.domain.Event
 import com.example.kotlin.screens.AppViewModel
-import com.google.firebase.Firebase
-import com.google.firebase.database.database
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 
@@ -33,8 +28,8 @@ class EventListViewModel @Inject constructor(
         openScreen("$ADD_EVENT_SCREEN?")
     }
 
-    fun onNoteClick(openScreen: (String) -> Unit, note: Event) {
-        openScreen("$EVENT_SCREEN?$EVENT_ID=${note.id}")
+    fun onEventClick(openScreen: (String) -> Unit, event: Event) {
+        openScreen("$EVENT_SCREEN/${event.id}")
     }
 
     fun onSignOutClick() {
