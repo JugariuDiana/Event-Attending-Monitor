@@ -1,5 +1,7 @@
 package com.example.kotlin
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -12,12 +14,16 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.example.kotlin.screens.eventList.EventListScreen
 import com.example.kotlin.screens.SignIn.SignInScreen
+import com.example.kotlin.screens.event.AddEventScreen
+import com.example.kotlin.screens.event.EventScreen
 import com.example.kotlin.screens.signUp.SignUpScreen
 import com.example.kotlin.screens.splash.SplashScreen
 import com.example.kotlin.ui.theme.KotlinTheme
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun kotlinApp() {
     KotlinTheme {
@@ -36,7 +42,6 @@ fun kotlinApp() {
         }
     }
 }
-//ToDO check the get status to see problems with spaces at the end
 
 @Composable
 fun rememberAppState(navController: NavHostController = rememberNavController()) =
@@ -44,23 +49,30 @@ fun rememberAppState(navController: NavHostController = rememberNavController())
         AppState(navController)
     }
 
+@RequiresApi(Build.VERSION_CODES.O)
 fun NavGraphBuilder.AppGraph(appState: AppState) {
-//
-//    composable(
-//        route = "$NOTE_SCREEN$NOTE_ID_ARG",
-//        arguments = listOf(navArgument(NOTE_ID) { defaultValue = NOTE_DEFAULT_ID })
-//    ) {
-//        NoteScreen(
-//            noteId = it.arguments?.getString(NOTE_ID) ?: NOTE_DEFAULT_ID,
-//            popUpScreen = { appState.popUp() },
-//            restartApp = { route -> appState.clearAndNavigate(route) }
-//        )
-//    }
+
+    composable(
+        route = "$EVENT_SCREEN$EVENT_ID_ARG",
+        arguments = listOf(navArgument(EVENT_ID) { defaultValue = EVENT_DEFAULT_ID })
+    ) {
+        EventScreen(
+            eventId = it.arguments?.getString(EVENT_ID) ?: EVENT_DEFAULT_ID,
+            popUpScreen = { appState.popUp() },
+            restartApp = { route -> appState.clearAndNavigate(route) }
+        )
+    }
 
     composable(EVENT_LIST_SCREEN){
         EventListScreen(
             restartApp = { route -> appState.clearAndNavigate(route) },
             openScreen = { route -> appState.navigate(route) }
+        )
+    }
+
+    composable(ADD_EVENT_SCREEN){
+        AddEventScreen(
+            popUpScreen = { appState.popUp() }
         )
     }
 

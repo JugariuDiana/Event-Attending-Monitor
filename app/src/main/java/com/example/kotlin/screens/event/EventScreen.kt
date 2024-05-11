@@ -27,6 +27,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.kotlin.domain.Event
 import com.example.kotlin.domain.getName
 import com.example.kotlin.ui.theme.KotlinTheme
 
@@ -39,7 +40,7 @@ fun EventScreen(
     modifier: Modifier = Modifier,
     viewModel: EventViewModel = hiltViewModel()
 ) {
-    val note = viewModel.event.collectAsState()
+    val event = viewModel.event.collectAsState()
 
     LaunchedEffect(Unit) { viewModel.initialize(eventId, restartApp) }
 
@@ -47,7 +48,7 @@ fun EventScreen(
         .fillMaxWidth()
         .fillMaxHeight()) {
         TopAppBar(
-            title = { Text(note.value.getName()) },
+            title = { Text(event.value.getName()) },
             actions = {
                 IconButton(onClick = { viewModel.saveEvent(popUpScreen) }) {
                     Icon(Icons.Filled.Done, "Save event")
@@ -72,7 +73,7 @@ fun EventScreen(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             TextField(
-                value = note.value.name,
+                value = event.value.name,
                 onValueChange = { viewModel.updateEvent(it) },
                 modifier = modifier
                     .fillMaxWidth()

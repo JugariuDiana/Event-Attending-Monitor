@@ -3,7 +3,8 @@ package com.example.kotlin.account
 import com.example.kotlin.domain.Event
 import kotlinx.coroutines.flow.Flow
 
-interface StorageService {
+interface EventStorageService {
+    val userEvents: Flow<List<Event>>
     val events: Flow<List<Event>>
     suspend fun createEvent(event: Event)
     suspend fun readEvent(eventId: String): Event?

@@ -1,7 +1,7 @@
 package com.example.kotlin.account
 
 import com.example.kotlin.account.Implementation.AccountServiceImpl
-import com.example.kotlin.account.Implementation.StorageServiceImpl
+import com.example.kotlin.account.Implementation.EventStorageServiceImpl
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -14,6 +14,6 @@ abstract class ServiceModule {
     abstract fun provideAccountService(impl: AccountServiceImpl): AccountService
 
     @Binds
-    abstract fun provideStorageService(impl: StorageServiceImpl): StorageService
+    abstract fun provideStorageService(impl: EventStorageServiceImpl): EventStorageService
 
 }

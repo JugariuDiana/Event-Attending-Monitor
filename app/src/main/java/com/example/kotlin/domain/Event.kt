@@ -1,20 +1,22 @@
 package com.example.kotlin.domain
 
 import com.google.firebase.firestore.DocumentId
+import java.time.LocalDate
 import java.time.LocalTime
 
 private const val TITLE_MAX_SIZE = 60
 
 data class Event (
-    @DocumentId val id: String = "",
-    val organizerId: String = "",
-    val name: String = "",
-    val location: String = "",
-    val availableSeats: Int = 0,
-    val reservedSeats: Int = 0,
-    val startTime: LocalTime? = null,
-    val endTime: LocalTime? = null,
-    val attendeesList: MutableList<Attendee> = mutableListOf(),
+    @DocumentId var id: String = "",
+    var organizerId: String = "",
+    var name: String = "",
+    var location: String = "",
+    var availableSeats: Int = 0,
+    var reservedSeats: Int = 0,
+    var startTime: String = "",
+    var endTime: String = "",
+    var date: String = "",
+    var attendeesList: MutableList<String> = mutableListOf(),
 )
 
 fun Event.getName(): String{

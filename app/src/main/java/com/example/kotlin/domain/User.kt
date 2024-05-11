@@ -1,9 +1,7 @@
 package com.example.kotlin.domain
 
 data class User (
-    val id: String = "",
-    val firstName: String = "",
-    val lastName: String = "",
-    val email: String = "",
-    val attendeesList: MutableList<Event> = mutableListOf(),
+    var id: String = "",
+    var name: String = "",
+    var email: String = "",
 )

@@ -11,7 +11,6 @@ import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
 import android.os.ParcelUuid
-import android.provider.Settings
 import android.util.Log
 import androidx.activity.compose.setContent
 import androidx.annotation.RequiresApi
@@ -42,16 +41,12 @@ import com.example.kotlin.screens.BLE.BluetoothListScreen
 import com.example.kotlin.ui.theme.KotlinTheme
 import java.util.UUID
 
-class EventActivity : AppCompatActivity() {
-    companion object {
-        private const val REQUEST_BLUETOOTH_PERMISSION = 123
-    }
-
+class BLEActivity : AppCompatActivity() {
 
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val requestPermissions = RequestPermissions(context = this@EventActivity, activity = this)
+        val requestPermissions = RequestPermissions(context = this@BLEActivity, activity = this)
 
         setContent {
             KotlinTheme {
@@ -59,7 +54,7 @@ class EventActivity : AppCompatActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    val bleScanner = BleScannerViewModel(context = this@EventActivity, requestPermissions)
+                    val bleScanner = BleScannerViewModel(context = this@BLEActivity, requestPermissions)
                     bleScanner.scan()
                     Surface(color = MaterialTheme.colorScheme.background) {
                         advertise()
@@ -85,9 +80,6 @@ class EventActivity : AppCompatActivity() {
             .setTxPowerLevel(AdvertisingSetParameters.TX_POWER_MEDIUM)
             .build()
 
-
-        val deviceId = Settings.Secure.getString(contentResolver, Settings.Secure.ANDROID_ID)
-
         val data = AdvertiseData.Builder()
             .setIncludeDeviceName(false)
             .addServiceUuid(parcelUuid)
@@ -107,24 +99,14 @@ class EventActivity : AppCompatActivity() {
                 )
                 currentAdvertisingSet = advertisingSet
                 if (ActivityCompat.checkSelfPermission(
-                        this@EventActivity,
+                        this@BLEActivity,
                         Manifest.permission.BLUETOOTH_ADVERTISE
                     ) != PackageManager.PERMISSION_GRANTED
-                ) {
-                    // TODO: Consider calling
-                    //    ActivityCompat#requestPermissions
-                    // here to request the missing permissions, and then overriding
-                    //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-                    //                                          int[] grantResults)
-                    // to handle the case where the user grants the permission. See the documentation
-                    // for ActivityCompat#requestPermissions for more details.
-                    return
-                }
+                ) { }
                 currentAdvertisingSet.setAdvertisingData(
                     AdvertiseData.Builder().setIncludeDeviceName(true).setIncludeTxPowerLevel(true).build()
                 )
                 currentAdvertisingSet.setScanResponseData(
-//                    AdvertiseData.Builder().addServiceUuid(ParcelUuid(UUID.randomUUID())).build()
                     AdvertiseData.Builder().addServiceUuid(parcelUuid).build()
                 )
             }

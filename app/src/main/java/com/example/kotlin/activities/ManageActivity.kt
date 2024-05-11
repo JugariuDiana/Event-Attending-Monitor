@@ -3,7 +3,6 @@ package com.example.kotlin.activities
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
-import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.background
@@ -64,7 +63,7 @@ fun ShowBleDevices() {
     ) {
         Button(
             onClick = {
-                mContext.startActivity(Intent(mContext, EventActivity::class.java))
+                mContext.startActivity(Intent(mContext, BLEActivity::class.java))
             },
             colors = ButtonDefaults.buttonColors(Color(0XFF0F9D58)),
         ) {

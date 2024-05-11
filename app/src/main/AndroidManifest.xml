@@ -9,6 +9,8 @@
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
     <uses-feature
         android:name="android.hardware.bluetooth_le"
@@ -34,7 +36,7 @@
             android:label="@string/title_activity_manage"
             android:theme="@style/Theme.Kotlin" />
         <activity
-            android:name=".activities.EventActivity"
+            android:name=".activities.BLEActivity"
             android:exported="false"
             android:label="@string/title_activity_event"
             android:theme="@style/Theme.Kotlin" />
