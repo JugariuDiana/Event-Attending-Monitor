@@ -4,7 +4,7 @@ import com.example.kotlin.ADD_EVENT_SCREEN
 import com.example.kotlin.EVENT_SCREEN
 import com.example.kotlin.SPLASH_SCREEN
 import com.example.kotlin.account.AccountService
-import com.example.kotlin.account.EventStorageService
+import com.example.kotlin.account.StorageService
 import com.example.kotlin.domain.Event
 import com.example.kotlin.screens.AppViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -13,9 +13,9 @@ import javax.inject.Inject
 @HiltViewModel
 class EventListViewModel @Inject constructor(
     private val accountService: AccountService,
-    eventStorageService: EventStorageService
+    storageService: StorageService
 ) : AppViewModel() {
-    val events = eventStorageService.events
+    val events = storageService.events
 
     fun initialize(restartApp: (String) -> Unit) {
         launchCatching {

@@ -1,6 +1,5 @@
 package com.example.kotlin.screens.event
 
-import android.annotation.SuppressLint
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -18,12 +17,9 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Done
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
-import androidx.compose.material3.DatePicker
-import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.SelectableDates
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
@@ -31,7 +27,6 @@ import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TimePicker
 import androidx.compose.material3.TimePickerState
 import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -48,11 +43,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.kotlin.MyDatePickerDialog
-import com.example.kotlin.domain.Event
 import com.example.kotlin.domain.getName
 import com.example.kotlin.ui.theme.KotlinTheme
-import java.text.SimpleDateFormat
-import java.util.Date
 
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
@@ -64,10 +56,16 @@ fun EventScreen(
     viewModel: EventViewModel = hiltViewModel()
 ) {
     val event = viewModel.event.collectAsState()
+    val user = viewModel.userInformation.collectAsState()
     val startTimeState = rememberTimePickerState(12, 30, true)
     val endTimeState = rememberTimePickerState(startTimeState.hour + 1, 30, true)
 
+    var isUserRegistered by remember { mutableStateOf(false) }
+
     LaunchedEffect(Unit) { viewModel.initialize(eventId, restartApp) }
+    LaunchedEffect(Unit) {
+        isUserRegistered = viewModel.isUserRegistered()
+    }
 
     var nameValidation by remember { mutableStateOf(true) }
     var locationValidation by remember { mutableStateOf(true) }
@@ -92,7 +90,7 @@ fun EventScreen(
         TopAppBar(
             title = { Text(event.value.getName()) },
             actions = {
-                if (viewModel.userInformation.id == event.value.organizerId){
+                if (user.value.id == event.value.organizerId){
                     IconButton(onClick = {
                         validateAllFields()
                         if (nameValidation && locationValidation && availableSeatsValidation && timeValidation)
@@ -101,6 +99,18 @@ fun EventScreen(
                     }
                     IconButton(onClick = { viewModel.deleteEvent(popUpScreen) }) {
                         Icon(Icons.Filled.Delete, "Save event")
+                    }
+                } else if (!isUserRegistered){
+                    Button(onClick = {
+                        viewModel.register(popUpScreen)
+                    }) {
+                        Text(text = "Register")
+                    }
+                } else {
+                    Button(onClick = {
+                        viewModel.unRegister(popUpScreen)
+                    }) {
+                        Text(text = "Unregister")
                     }
                 }
             }
@@ -194,12 +204,6 @@ fun EventScreen(
 
             if (!availableSeatsValidation){
                 Text(text = "Available seats must be a number (bigger than reserved seats)", color = Color.Red)
-            }
-
-            Button(onClick = {
-                event.value.reservedSeats++
-            }) {
-                Text(text = "Reserved seats : {${event.value.reservedSeats} -> Register")
             }
 
             TextField(

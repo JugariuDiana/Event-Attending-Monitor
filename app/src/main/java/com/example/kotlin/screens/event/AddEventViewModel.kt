@@ -4,19 +4,18 @@ import android.os.Build
 import androidx.annotation.RequiresApi
 import com.example.kotlin.EVENT_DEFAULT_ID
 import com.example.kotlin.ORGANIZER_DEFAULT_ID
-import com.example.kotlin.account.EventStorageService
+import com.example.kotlin.account.StorageService
 import com.example.kotlin.domain.Event
 import com.example.kotlin.screens.AppViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import java.time.LocalDate
-import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import javax.inject.Inject
 
 @HiltViewModel
 class AddEventViewModel @Inject constructor(
-    private val eventStorageService: EventStorageService
+    private val storageService: StorageService
 ) : AppViewModel() {
     var name = MutableStateFlow("")
     var location = MutableStateFlow("")
@@ -58,7 +57,7 @@ class AddEventViewModel @Inject constructor(
     @RequiresApi(Build.VERSION_CODES.O)
     fun addEvent(popUpScreen: () -> Unit) {
         launchCatching {
-            eventStorageService.createEvent(Event(EVENT_DEFAULT_ID, ORGANIZER_DEFAULT_ID, name.value
+            storageService.createEvent(Event(EVENT_DEFAULT_ID, ORGANIZER_DEFAULT_ID, name.value
                 , location.value, availableSeats.value, 0, startTime.value, endTime.value,
                 date.value))
         }
