@@ -171,7 +171,7 @@ fun EventItem(
                 .clickable { onActionClick(event.id) }
         ) {
             Text(
-                text = event.getName() + " " + event.location,
+                text = event.getName() + "->" + event.location,
                 modifier = Modifier.padding(12.dp, 12.dp, 12.dp, 12.dp),
                 style = MaterialTheme.typography.bodyLarge
             )

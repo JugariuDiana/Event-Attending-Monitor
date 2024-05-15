@@ -1,21 +1,26 @@
 package com.example.kotlin.screens.eventList
 
+import androidx.compose.runtime.collectAsState
 import com.example.kotlin.ADD_EVENT_SCREEN
 import com.example.kotlin.EVENT_SCREEN
 import com.example.kotlin.SPLASH_SCREEN
 import com.example.kotlin.account.AccountService
 import com.example.kotlin.account.StorageService
+import com.example.kotlin.domain.Attendee
 import com.example.kotlin.domain.Event
 import com.example.kotlin.screens.AppViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.FlowCollector
+import kotlinx.coroutines.flow.collect
 import javax.inject.Inject
 
 @HiltViewModel
 class EventListViewModel @Inject constructor(
     private val accountService: AccountService,
-    storageService: StorageService
+    private val storageService: StorageService
 ) : AppViewModel() {
     val events = storageService.events
+    val attendees = storageService.attendees
 
     fun initialize(restartApp: (String) -> Unit) {
         launchCatching {

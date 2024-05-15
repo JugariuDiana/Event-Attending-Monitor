@@ -13,6 +13,8 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Done
 import androidx.compose.material3.AlertDialog
@@ -88,7 +90,9 @@ fun EventScreen(
         .fillMaxWidth()
         .fillMaxHeight()) {
         TopAppBar(
-            title = { Text(event.value.getName()) },
+            title = {
+                IconButton(onClick = popUpScreen ){
+                    Icon(Icons.Filled.ArrowBack, "Back")}},
             actions = {
                 if (user.value.id == event.value.organizerId){
                     IconButton(onClick = {
@@ -100,13 +104,13 @@ fun EventScreen(
                     IconButton(onClick = { viewModel.deleteEvent(popUpScreen) }) {
                         Icon(Icons.Filled.Delete, "Save event")
                     }
-                } else if (!isUserRegistered){
+                } else if (!isUserRegistered && event.value.availableSeats > event.value.reservedSeats){
                     Button(onClick = {
-                        viewModel.register(popUpScreen)
+                            viewModel.register(popUpScreen)
                     }) {
                         Text(text = "Register")
                     }
-                } else {
+                } else if (isUserRegistered) {
                     Button(onClick = {
                         viewModel.unRegister(popUpScreen)
                     }) {

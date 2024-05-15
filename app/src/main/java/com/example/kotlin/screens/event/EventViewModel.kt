@@ -35,13 +35,18 @@ class EventViewModel @Inject constructor(
 
     //ToDO - see how to use isUserRegistered, complete registration, not registration and event editing
     suspend fun isUserRegistered(): Boolean {
-        return storageService.attendees
-            .map { attendees ->
-                attendees.any { attendee ->
-                    attendee.id in event.value.attendeesList && userInformation.value.id == attendee.userId
-                }
-            }
-            .firstOrNull() ?: false
+        val attendees = storageService.getEventAttendees(event.value.attendeesList)
+        for (attendance in attendees)
+            if (attendance.userId == userInformation.value.id)
+                return true
+        return false
+//        return storageService.attendees
+//            .map { attendees ->
+//                attendees.any { attendee ->
+//                    attendee.id in event.value.attendeesList && userInformation.value.id == attendee.userId
+//                }
+//            }
+//            .firstOrNull() ?: false
     }
 
     private fun observeAuthenticationState(restartApp: (String) -> Unit) {
@@ -69,11 +74,11 @@ class EventViewModel @Inject constructor(
     }
 
     fun unRegister(popUpScreen: () -> Unit) {
-        val attendee = Attendee(UUID.randomUUID().toString(), userInformation.value.id)
-        event.value.attendeesList.remove(attendee.id)
-        event.value.reservedSeats--
         launchCatching {
-            storageService.deleteAttendee(attendee.id)
+            val attendee = storageService.getUsersAttendance(userInformation.value.id, event.value.attendeesList)
+            event.value.attendeesList.remove(attendee)
+            event.value.reservedSeats--
+            storageService.deleteAttendee(attendee)
             storageService.updateEvent(event.value)
         }
 
@@ -90,6 +95,8 @@ class EventViewModel @Inject constructor(
 
     fun deleteEvent(popUpScreen: () -> Unit) {
         launchCatching {
+            for (attendeeId in event.value.attendeesList)
+                storageService.deleteAttendee(attendeeId)
             storageService.deleteEvent(event.value.id)
         }
 

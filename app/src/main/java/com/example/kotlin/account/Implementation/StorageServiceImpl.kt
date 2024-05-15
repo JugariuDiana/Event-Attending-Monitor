@@ -92,8 +92,31 @@ class StorageServiceImpl @Inject constructor(private val auth: AccountService) :
         }
     }
 
+    override suspend fun getEventAttendees(attendances: List<String>): List<Attendee> {
+        val listAttendee = listOf<Attendee>()
+        for (id in attendances){
+            val attendance = database.child(ATTENDEES_COLLECTION).child(id).get().await().getValue(Attendee::class.java)
+            if (attendance != null) {
+                listAttendee.plus(attendance)
+            }
+        }
+
+        return listAttendee
+    }
+
     override suspend fun createAttendee(attendee: Attendee) {
         database.child(ATTENDEES_COLLECTION).child(attendee.id).setValue(attendee).await()
+    }
+
+    override suspend fun getUsersAttendance(userId:String, attendances: List<String>): String {
+        for (id in attendances){
+            val attendance = database.child(ATTENDEES_COLLECTION).child(id).get().await().getValue(Attendee::class.java)
+            if (attendance != null) {
+                if (attendance.userId == userId)
+                    return id
+            }
+        }
+        return ""
     }
 
     override suspend fun createEvent(event: Event) {
