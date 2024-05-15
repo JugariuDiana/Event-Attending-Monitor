@@ -20,3 +20,5 @@ const val ATTENDEES_COLLECTION = "attendees"
 const val EVENT_ID = "eventId"
 const val EVENT_DEFAULT_ID = "-1"
 const val ORGANIZER_DEFAULT_ID = "-1"
+const val PERMISSION_REQUEST_BLUETOOTH_CODE = 1
+const val PERMISSION_REQUEST_LOCATION_CODE = 199

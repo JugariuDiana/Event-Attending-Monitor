@@ -24,7 +24,7 @@ fun BluetoothListScreen(
 ) {
     Surface {
         val devices by deviceListAdaptor.deviceList.collectAsStateWithLifecycle(emptyList())
-        Log.d("bleScan", "devices ${devices.size}")
+//        Log.d("bleScan", "devices ${devices.size}")
         LazyColumn(
             contentPadding = PaddingValues(
                 start = 20.dp,
