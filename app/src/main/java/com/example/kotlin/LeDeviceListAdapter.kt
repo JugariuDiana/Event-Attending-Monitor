@@ -17,13 +17,13 @@ class LeDeviceListAdapter:ViewModel() {
     val deviceList: Flow<List<BleId>> get() = flow {
         while (true){
         val deviceList = _deviceList.value
-//        Log.d("bleScan", "list size + ${deviceList.size}")
+        Log.d("bleScan", "list size + ${deviceList.size}")
         delay(100)
         emit(deviceList)}
     }//.stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 
     fun addDevice(device: BleId) {
-//        Log.d("bleScan", "adding device + ${device.id}")
+        Log.d("bleScan", "adding device + ${device.id}")
         val currentList = _deviceList.value
         if (currentList.none { it.advertiseData == device.advertiseData }) {
             _deviceList.value = currentList + device
