@@ -1,16 +1,13 @@
 package com.example.kotlin.account.Implementation
 
 import android.util.Log
-import com.example.kotlin.EVENTS_COLLECTION
 import com.example.kotlin.USERS_COLLECTION
 import com.example.kotlin.account.AccountService
-import com.example.kotlin.domain.Event
 import com.example.kotlin.domain.User
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.auth
 import com.google.firebase.database.FirebaseDatabase
-import com.google.firebase.database.getValue
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
@@ -62,7 +59,7 @@ class AccountServiceImpl @Inject constructor() : AccountService {
 
     override suspend fun deleteAccount() {
         val id = currentUserId
-        Firebase.auth.currentUser!!.delete().await()
-        usersLocation.child(currentUserId).removeValue().await()
+        Firebase.auth.currentUser?.delete()
+        usersLocation.child(id).removeValue().addOnFailureListener{ Log.d("user", "failure remove account -", it) }
     }
 }
