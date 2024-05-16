@@ -1,6 +1,5 @@
 package com.example.kotlin.screens.event
 
-import androidx.compose.runtime.collectAsState
 import com.example.kotlin.EVENT_DEFAULT_ID
 import com.example.kotlin.ORGANIZER_DEFAULT_ID
 import com.example.kotlin.SPLASH_SCREEN
@@ -12,8 +11,6 @@ import com.example.kotlin.domain.User
 import com.example.kotlin.screens.AppViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.firstOrNull
-import kotlinx.coroutines.flow.map
 import java.util.UUID
 import javax.inject.Inject
 
@@ -31,22 +28,6 @@ class EventViewModel @Inject constructor(
             userInformation.value = accountService.getUser(accountService.currentUserId)!!
         }
         observeAuthenticationState(restartApp)
-    }
-
-    //ToDO - see how to use isUserRegistered, complete registration, not registration and event editing
-    suspend fun isUserRegistered(): Boolean {
-        val attendees = storageService.getEventAttendees(event.value.attendeesList)
-        for (attendance in attendees)
-            if (attendance.userId == userInformation.value.id)
-                return true
-        return false
-//        return storageService.attendees
-//            .map { attendees ->
-//                attendees.any { attendee ->
-//                    attendee.id in event.value.attendeesList && userInformation.value.id == attendee.userId
-//                }
-//            }
-//            .firstOrNull() ?: false
     }
 
     private fun observeAuthenticationState(restartApp: (String) -> Unit) {
@@ -78,8 +59,8 @@ class EventViewModel @Inject constructor(
             val attendee = storageService.getUsersAttendance(userInformation.value.id, event.value.attendeesList)
             event.value.attendeesList.remove(attendee)
             event.value.reservedSeats--
-            storageService.deleteAttendee(attendee)
             storageService.updateEvent(event.value)
+            storageService.deleteAttendee(attendee)
         }
 
         popUpScreen()

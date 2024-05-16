@@ -1,5 +1,6 @@
 package com.example.kotlin.account.Implementation
 
+import android.util.Log
 import com.example.kotlin.ATTENDEES_COLLECTION
 import com.example.kotlin.EVENTS_COLLECTION
 import com.example.kotlin.USERS_COLLECTION
@@ -8,6 +9,8 @@ import com.example.kotlin.account.StorageService
 import com.example.kotlin.domain.Attendee
 import com.example.kotlin.domain.Event
 import com.example.kotlin.domain.User
+import com.google.android.gms.tasks.OnCompleteListener
+import com.google.android.gms.tasks.OnFailureListener
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
@@ -93,11 +96,11 @@ class StorageServiceImpl @Inject constructor(private val auth: AccountService) :
     }
 
     override suspend fun getEventAttendees(attendances: List<String>): List<Attendee> {
-        val listAttendee = listOf<Attendee>()
+        val listAttendee = mutableListOf<Attendee>()
         for (id in attendances){
             val attendance = database.child(ATTENDEES_COLLECTION).child(id).get().await().getValue(Attendee::class.java)
             if (attendance != null) {
-                listAttendee.plus(attendance)
+                listAttendee.add(attendance)
             }
         }
 
@@ -105,7 +108,7 @@ class StorageServiceImpl @Inject constructor(private val auth: AccountService) :
     }
 
     override suspend fun createAttendee(attendee: Attendee) {
-        database.child(ATTENDEES_COLLECTION).child(attendee.id).setValue(attendee).await()
+        database.child(ATTENDEES_COLLECTION).child(attendee.id).setValue(attendee)
     }
 
     override suspend fun getUsersAttendance(userId:String, attendances: List<String>): String {
@@ -133,7 +136,9 @@ class StorageServiceImpl @Inject constructor(private val auth: AccountService) :
     }
 
     override suspend fun updateEvent(event: Event) {
-        eventsLocation.child(event.id).setValue(event).await()
+        eventsLocation.child(event.id).setValue(event)
+            .addOnCompleteListener { Log.d("user","finished event update") }
+            .addOnFailureListener { Log.d("user", "failure event update-", it) }
     }
 
     override suspend fun updateAttendee(attendee: Attendee) {
@@ -145,7 +150,9 @@ class StorageServiceImpl @Inject constructor(private val auth: AccountService) :
     }
 
     override suspend fun deleteAttendee(attendeeId: String) {
-        database.child(ATTENDEES_COLLECTION).child(attendeeId).removeValue().await()
+        database.child(ATTENDEES_COLLECTION).child(attendeeId).removeValue()
+            .addOnCompleteListener { Log.d("user", "finished delete attendance") }
+            .addOnFailureListener { Log.d("user", "failure delete attendance-", it) }
     }
 
     private fun generateEventId(): String {

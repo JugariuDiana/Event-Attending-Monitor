@@ -1,7 +1,6 @@
 package com.example.kotlin
 
 import android.os.Build
-import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
@@ -12,7 +11,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
-import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -20,6 +18,8 @@ import androidx.navigation.navArgument
 import com.example.kotlin.screens.SignIn.SignInScreen
 import com.example.kotlin.screens.event.AddEventScreen
 import com.example.kotlin.screens.event.EventScreen
+import com.example.kotlin.screens.event.RegisterEventScreen
+import com.example.kotlin.screens.event.UnregisterEventScreen
 import com.example.kotlin.screens.eventList.EventListScreen
 import com.example.kotlin.screens.signUp.SignUpScreen
 import com.example.kotlin.screens.splash.SplashScreen
@@ -79,6 +79,27 @@ fun NavGraphBuilder.AppGraph(appState: AppState) {
         )
     }
 
+    composable(
+        route = "$UNREGISTER_EVENT_SCREEN/{$EVENT_ID}",
+        arguments = listOf(navArgument(EVENT_ID) {defaultValue = ""})
+    ) {
+        UnregisterEventScreen(
+            eventId = it.arguments?.getString(EVENT_ID) ?: "",
+            popUpScreen = { appState.popUp() },
+            restartApp = { route -> appState.clearAndNavigate(route) }
+        )
+    }
+
+    composable(
+        route = "$REGISTER_EVENT_SCREEN/{$EVENT_ID}",
+        arguments = listOf(navArgument(EVENT_ID){})
+    ) {
+        RegisterEventScreen(
+            eventId = it.arguments?.getString(EVENT_ID) ?: "",
+            popUpScreen = { appState.popUp() },
+            restartApp = { route -> appState.clearAndNavigate(route) }
+        )
+    }
 
     composable(EVENT_LIST_SCREEN){
         EventListScreen(

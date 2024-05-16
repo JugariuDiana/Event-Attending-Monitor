@@ -14,7 +14,6 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Done
 import androidx.compose.material3.AlertDialog
@@ -45,7 +44,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.kotlin.MyDatePickerDialog
-import com.example.kotlin.domain.getName
 import com.example.kotlin.ui.theme.KotlinTheme
 
 @Composable
@@ -58,16 +56,10 @@ fun EventScreen(
     viewModel: EventViewModel = hiltViewModel()
 ) {
     val event = viewModel.event.collectAsState()
-    val user = viewModel.userInformation.collectAsState()
     val startTimeState = rememberTimePickerState(12, 30, true)
     val endTimeState = rememberTimePickerState(startTimeState.hour + 1, 30, true)
 
-    var isUserRegistered by remember { mutableStateOf(false) }
-
     LaunchedEffect(Unit) { viewModel.initialize(eventId, restartApp) }
-    LaunchedEffect(Unit) {
-        isUserRegistered = viewModel.isUserRegistered()
-    }
 
     var nameValidation by remember { mutableStateOf(true) }
     var locationValidation by remember { mutableStateOf(true) }
@@ -94,28 +86,14 @@ fun EventScreen(
                 IconButton(onClick = popUpScreen ){
                     Icon(Icons.Filled.ArrowBack, "Back")}},
             actions = {
-                if (user.value.id == event.value.organizerId){
-                    IconButton(onClick = {
-                        validateAllFields()
-                        if (nameValidation && locationValidation && availableSeatsValidation && timeValidation)
-                            viewModel.saveEvent(popUpScreen) }) {
-                        Icon(Icons.Filled.Done, "Save event")
-                    }
-                    IconButton(onClick = { viewModel.deleteEvent(popUpScreen) }) {
-                        Icon(Icons.Filled.Delete, "Save event")
-                    }
-                } else if (!isUserRegistered && event.value.availableSeats > event.value.reservedSeats){
-                    Button(onClick = {
-                            viewModel.register(popUpScreen)
-                    }) {
-                        Text(text = "Register")
-                    }
-                } else if (isUserRegistered) {
-                    Button(onClick = {
-                        viewModel.unRegister(popUpScreen)
-                    }) {
-                        Text(text = "Unregister")
-                    }
+                IconButton(onClick = {
+                    validateAllFields()
+                    if (nameValidation && locationValidation && availableSeatsValidation && timeValidation)
+                        viewModel.saveEvent(popUpScreen) }) {
+                    Icon(Icons.Filled.Done, "Save event")
+                }
+                IconButton(onClick = { viewModel.deleteEvent(popUpScreen) }) {
+                    Icon(Icons.Filled.Delete, "Save event")
                 }
             }
         )

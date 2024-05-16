@@ -44,6 +44,7 @@ import com.example.kotlin.activities.ui.theme.KotlinTheme
 import com.example.kotlin.activities.ui.theme.Purple40
 import com.example.kotlin.activities.ui.theme.PurpleGrey40
 import com.example.kotlin.domain.Event
+import com.example.kotlin.domain.User
 import com.example.kotlin.domain.getName
 
 @Composable
@@ -70,6 +71,7 @@ fun EventListScreen(
         }
     ) {
         val events by viewModel.events.collectAsState(emptyList())
+        val user by viewModel.user.collectAsState(initial = User())
         var showExitAppDialog by remember { mutableStateOf(false) }
         var showRemoveAccDialog by remember { mutableStateOf(false) }
 
@@ -104,8 +106,9 @@ fun EventListScreen(
                 LazyColumn {
                     items(events, key = { it.id }) { eventItem ->
                         EventItem(
+                            user = user!!,
                             event = eventItem,
-                            onActionClick = { viewModel.onEventClick(openScreen, eventItem) }
+                            onActionClick = { viewModel.onEventClick(openScreen, eventItem, user!!) }
                         )
                     }
                 }
@@ -158,6 +161,7 @@ fun EventListScreen(
 
 @Composable
 fun EventItem(
+    user: User,
     event: Event,
     onActionClick: (String) -> Unit
 ) {
