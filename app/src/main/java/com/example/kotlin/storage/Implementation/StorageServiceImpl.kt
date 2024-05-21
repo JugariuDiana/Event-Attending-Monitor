@@ -1,16 +1,14 @@
-package com.example.kotlin.account.Implementation
+package com.example.kotlin.storage.Implementation
 
 import android.util.Log
 import com.example.kotlin.ATTENDEES_COLLECTION
 import com.example.kotlin.EVENTS_COLLECTION
 import com.example.kotlin.USERS_COLLECTION
-import com.example.kotlin.account.AccountService
-import com.example.kotlin.account.StorageService
+import com.example.kotlin.storage.AccountService
+import com.example.kotlin.storage.StorageService
 import com.example.kotlin.domain.Attendee
 import com.example.kotlin.domain.Event
 import com.example.kotlin.domain.User
-import com.google.android.gms.tasks.OnCompleteListener
-import com.google.android.gms.tasks.OnFailureListener
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
@@ -142,7 +140,7 @@ class StorageServiceImpl @Inject constructor(private val auth: AccountService) :
     }
 
     override suspend fun updateAttendee(attendee: Attendee) {
-        database.child(ATTENDEES_COLLECTION).child(attendee.id).setValue(attendee).await()
+        database.child(ATTENDEES_COLLECTION).child(attendee.id).setValue(attendee)
     }
 
     override suspend fun deleteEvent(eventId: String) {

@@ -1,8 +1,8 @@
-package com.example.kotlin.account.Implementation
+package com.example.kotlin.storage.Implementation
 
 import android.util.Log
 import com.example.kotlin.USERS_COLLECTION
-import com.example.kotlin.account.AccountService
+import com.example.kotlin.storage.AccountService
 import com.example.kotlin.domain.User
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth

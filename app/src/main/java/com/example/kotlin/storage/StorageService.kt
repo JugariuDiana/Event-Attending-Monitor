@@ -1,4 +1,4 @@
-package com.example.kotlin.account
+package com.example.kotlin.storage
 
 import com.example.kotlin.domain.Attendee
 import com.example.kotlin.domain.Event

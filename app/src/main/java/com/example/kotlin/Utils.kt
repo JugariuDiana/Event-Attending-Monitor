@@ -8,6 +8,7 @@ const val FIRESTORE_PORT = 8080
 const val EVENT_LIST_SCREEN = "EventListScreen"
 const val BLUETOOTH_LIST_SCREEN = "BluetoothListScreen"
 const val EVENT_SCREEN = "EventScreen"
+const val BLE_ACTIVITY = "BLEActivity"
 const val UNREGISTER_EVENT_SCREEN = "UnregisterEventScreen"
 const val REGISTER_EVENT_SCREEN = "RegisterEventScreen"
 const val ADD_EVENT_SCREEN = "AddEventScreen"

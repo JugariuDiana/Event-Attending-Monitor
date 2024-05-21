@@ -9,12 +9,17 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.navigation.ActivityNavigatorDestinationBuilder
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
+import androidx.navigation.activity
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.example.kotlin.activities.BLEActivity
+import com.example.kotlin.screens.BLE.BluetoothListScreen
 import com.example.kotlin.screens.SignIn.SignInScreen
 import com.example.kotlin.screens.event.AddEventScreen
 import com.example.kotlin.screens.event.EventScreen
@@ -25,7 +30,7 @@ import com.example.kotlin.screens.signUp.SignUpScreen
 import com.example.kotlin.screens.splash.SplashScreen
 import com.example.kotlin.ui.theme.KotlinTheme
 
-@RequiresApi(Build.VERSION_CODES.O)
+@RequiresApi(Build.VERSION_CODES.TIRAMISU)
 @Composable
 fun kotlinApp() {
     KotlinTheme {
@@ -51,7 +56,7 @@ fun rememberAppState(navController: NavHostController = rememberNavController())
         AppState(navController)
     }
 
-@RequiresApi(Build.VERSION_CODES.O)
+@RequiresApi(Build.VERSION_CODES.TIRAMISU)
 fun NavGraphBuilder.AppGraph(appState: AppState) {
 
 //    composable(
@@ -90,6 +95,23 @@ fun NavGraphBuilder.AppGraph(appState: AppState) {
         )
     }
 
+    activity(
+        route = "$BLE_ACTIVITY/{$EVENT_ID}"
+    ){
+        BLEActivity()
+    }
+
+    composable(
+        route = "$BLUETOOTH_LIST_SCREEN/{$EVENT_ID}",
+        arguments = listOf(navArgument(EVENT_ID) {defaultValue = ""})
+    ) {
+        BluetoothListScreen(
+            eventId = it.arguments?.getString(EVENT_ID) ?: "",
+            popUpScreen = { appState.popUp() },
+            restartApp = { route -> appState.clearAndNavigate(route) }
+        )
+    }
+
     composable(
         route = "$REGISTER_EVENT_SCREEN/{$EVENT_ID}",
         arguments = listOf(navArgument(EVENT_ID){})
@@ -104,7 +126,8 @@ fun NavGraphBuilder.AppGraph(appState: AppState) {
     composable(EVENT_LIST_SCREEN){
         EventListScreen(
             restartApp = { route -> appState.clearAndNavigate(route) },
-            openScreen = { route -> appState.navigate(route) }
+            openScreen = { route -> appState.navigate(route) },
+            context = LocalContext.current,
         )
     }
 

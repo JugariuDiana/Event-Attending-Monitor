@@ -3,7 +3,7 @@ package com.example.kotlin.screens.signUp
 import com.example.kotlin.EVENT_LIST_SCREEN
 import com.example.kotlin.SIGN_UP_SCREEN
 import com.example.kotlin.USERS_COLLECTION
-import com.example.kotlin.account.AccountService
+import com.example.kotlin.storage.AccountService
 import com.example.kotlin.domain.User
 import com.example.kotlin.screens.AppViewModel
 import com.google.firebase.database.FirebaseDatabase

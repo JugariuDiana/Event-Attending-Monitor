@@ -1,6 +1,9 @@
 package com.example.kotlin.screens.eventList
 
 import android.annotation.SuppressLint
+import android.content.Context
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -34,6 +37,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -47,6 +51,7 @@ import com.example.kotlin.domain.Event
 import com.example.kotlin.domain.User
 import com.example.kotlin.domain.getName
 
+@RequiresApi(Build.VERSION_CODES.TIRAMISU)
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
@@ -54,7 +59,8 @@ fun EventListScreen(
     restartApp: (String) -> Unit,
     openScreen: (String) -> Unit,
     modifier: Modifier = Modifier,
-    viewModel: EventListViewModel = hiltViewModel()
+    viewModel: EventListViewModel = hiltViewModel(),
+    context: Context,
 ) {
     LaunchedEffect(Unit) { viewModel.initialize(restartApp) }
 
@@ -106,9 +112,10 @@ fun EventListScreen(
                 LazyColumn {
                     items(events, key = { it.id }) { eventItem ->
                         EventItem(
+                            context = context,
                             user = user!!,
                             event = eventItem,
-                            onActionClick = { viewModel.onEventClick(openScreen, eventItem, user!!) }
+                            onActionClick = { viewModel.onEventClick(context, openScreen, eventItem, user!!) }
                         )
                     }
                 }
@@ -161,6 +168,7 @@ fun EventListScreen(
 
 @Composable
 fun EventItem(
+    context: Context,
     user: User,
     event: Event,
     onActionClick: (String) -> Unit
@@ -183,10 +191,12 @@ fun EventItem(
     }
 }
 
+@RequiresApi(Build.VERSION_CODES.TIRAMISU)
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
 fun EventsListPreview() {
+    val context = LocalContext.current
     KotlinTheme {
-        EventListScreen({ }, { })
+        EventListScreen({ }, { }, context = context)
     }
 }

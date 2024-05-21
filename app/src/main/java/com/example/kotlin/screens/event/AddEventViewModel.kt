@@ -4,7 +4,7 @@ import android.os.Build
 import androidx.annotation.RequiresApi
 import com.example.kotlin.EVENT_DEFAULT_ID
 import com.example.kotlin.ORGANIZER_DEFAULT_ID
-import com.example.kotlin.account.StorageService
+import com.example.kotlin.storage.StorageService
 import com.example.kotlin.domain.Event
 import com.example.kotlin.screens.AppViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel

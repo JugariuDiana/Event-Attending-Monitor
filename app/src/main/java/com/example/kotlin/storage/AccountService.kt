@@ -1,4 +1,4 @@
-package com.example.kotlin.account
+package com.example.kotlin.storage
 
 import kotlinx.coroutines.flow.Flow
 import com.example.kotlin.domain.User

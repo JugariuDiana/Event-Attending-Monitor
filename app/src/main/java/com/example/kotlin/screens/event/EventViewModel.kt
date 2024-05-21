@@ -3,8 +3,8 @@ package com.example.kotlin.screens.event
 import com.example.kotlin.EVENT_DEFAULT_ID
 import com.example.kotlin.ORGANIZER_DEFAULT_ID
 import com.example.kotlin.SPLASH_SCREEN
-import com.example.kotlin.account.AccountService
-import com.example.kotlin.account.StorageService
+import com.example.kotlin.storage.AccountService
+import com.example.kotlin.storage.StorageService
 import com.example.kotlin.domain.Attendee
 import com.example.kotlin.domain.Event
 import com.example.kotlin.domain.User

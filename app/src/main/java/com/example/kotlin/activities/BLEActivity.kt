@@ -1,7 +1,6 @@
 package com.example.kotlin.activities
 
 import android.Manifest
-import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothManager
@@ -19,58 +18,80 @@ import android.os.Bundle
 import android.os.ParcelUuid
 import android.provider.Settings
 import android.util.Log
-import androidx.activity.compose.setContent
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.unit.dp
 import androidx.core.app.ActivityCompat
+import androidx.lifecycle.lifecycleScope
+import com.example.kotlin.EVENT_DEFAULT_ID
 import com.example.kotlin.LOG_TAG
-import com.example.kotlin.LeDeviceListAdapter
+import com.example.kotlin.ORGANIZER_DEFAULT_ID
 import com.example.kotlin.PERMISSION_REQUEST_BLUETOOTH_CODE
 import com.example.kotlin.databinding.ActivityMainBinding
+import com.example.kotlin.domain.Attendee
+import com.example.kotlin.domain.Event
+import com.example.kotlin.domain.User
 import com.example.kotlin.screens.BLE.BleScannerViewModel
-import com.example.kotlin.screens.BLE.BluetoothListScreen
-import com.example.kotlin.ui.theme.KotlinTheme
+import com.example.kotlin.storage.Implementation.AccountServiceImpl
+import com.example.kotlin.storage.Implementation.StorageServiceImpl
 import com.google.android.material.snackbar.Snackbar
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.launch
 import pub.devrel.easypermissions.AfterPermissionGranted
 import pub.devrel.easypermissions.EasyPermissions
 import java.util.UUID
 
-class BLEActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks{
+class BLEActivity: AppCompatActivity(), EasyPermissions.PermissionCallbacks{
     lateinit var  binding: ActivityMainBinding
-
-    companion object {
-        private const val REQUEST_BLUETOOTH_PERMISSION = 123
-    }
-
-    var permissionGranted by mutableStateOf(false)
-    lateinit var bleScanner: BleScannerViewModel
+    private lateinit var storageService: StorageServiceImpl
+    private lateinit var accountService: AccountServiceImpl
+    var event = MutableStateFlow(Event(EVENT_DEFAULT_ID, ORGANIZER_DEFAULT_ID))
+    private var attendanceId by mutableStateOf("")
+    private var permissionGranted by mutableStateOf(false)
+    lateinit var attendees: List<Attendee>
+    private var userInformation = MutableStateFlow(User())
+    private lateinit var users : Flow<List<User>>
 
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        if (!hasPermissions()){
-            requestPermissionsForScan()
-        } else {
-            onPermissionsGranted()
+        val eventId = intent.getStringExtra("eventId")
+        accountService = AccountServiceImpl()
+        storageService = StorageServiceImpl(accountService)
+
+        users = storageService.users
+
+        lifecycleScope.launch{
+            event.value = storageService.readEvent(eventId.toString())!!
+            attendanceId = storageService.getUsersAttendance(accountService.currentUserId, event.value.attendeesList)
+            userInformation.value = accountService.getUser(accountService.currentUserId)!!
+            attendees = storageService.getEventAttendees(event.value.attendeesList)
+            if (!hasPermissions()){
+                requestPermissionsForScan()
+            } else {
+                onPermissionsGranted()
+            }
         }
+    }
+
+    suspend fun getAttendeeName(userId: String) : String{
+        var attendeeName = "User not found"
+        Log.d("dataMonitoring", event.value.id)
+        Log.d("dataMonitoring", userId)
+        users.collect { userList ->
+            val user = userList.find { it.id == userId }
+            if (user != null) {
+                attendeeName = user.name
+            }
+        }
+        return attendeeName
     }
 
     @RequiresApi(Build.VERSION_CODES.S)
@@ -113,21 +134,22 @@ class BLEActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks{
         onPermissionsGranted()
     }
 
+    @OptIn(DelicateCoroutinesApi::class)
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     @AfterPermissionGranted(PERMISSION_REQUEST_BLUETOOTH_CODE)
-    private fun onPermissionsGranted() {
+    fun onPermissionsGranted() {
         permissionGranted = true
         startBluetooth()
         startLocation()
-        if (isEnabledBluetooth() == true && isEnabledLocation() == true){
-            bleScanner = BleScannerViewModel(this@BLEActivity, this)
-            advertise()
-            bleScanner.scan()
-
-            setContent{
-                KotlinTheme {
-                    show(leDeviceListAdapter = bleScanner.getLeDeviceListAdapter())
+        if (isEnabledBluetooth() == true && isEnabledLocation()){
+            val bleScanner = BleScannerViewModel(accountService, storageService)
+            GlobalScope.launch {
+                while (attendanceId.isEmpty()){
+                    delay(100)
                 }
+                advertise()
+//                scan()
+                bleScanner.scan(this@BLEActivity, this@BLEActivity)
             }
         }
     }
@@ -139,7 +161,7 @@ class BLEActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks{
         return bluetoothAdapter?.isEnabled
     }
 
-    private fun isEnabledLocation(): Boolean? {
+    private fun isEnabledLocation(): Boolean {
         val locationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
 
         return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)
@@ -170,10 +192,113 @@ class BLEActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks{
         }
     }
 
+//    @RequiresApi(Build.VERSION_CODES.S)
+//    suspend fun scan(){
+//        while (true)
+//        {
+//            scanLeDevice()
+//            delay(2000) // Must change, maybe scan for 1 minute every five minutes
+//            Log.d("dataMonitoring", "start scanning again")
+////            leDeviceListAdapter.emptyList()
+//        }
+//    }
+//
+//    @RequiresApi(Build.VERSION_CODES.S)
+//    private fun scanLeDevice() {
+//        Log.d("bleScan", "scanLeDevice: $scanning")
+//        Log.d("dataMonitoring", "eventid ->" + event.value.id)
+//        if (!scanning) { // Stops scanning after a pre-defined scan period.
+//            handler.postDelayed({
+//                scanning = false
+//                Log.d("bleScan", "post delayed")
+//                if (ActivityCompat.checkSelfPermission(
+//                        this,
+//                        Manifest.permission.BLUETOOTH_SCAN
+//                    ) != PackageManager.PERMISSION_GRANTED
+//                ) {
+//                    EasyPermissions.requestPermissions(
+//                        this,
+//                        "Bluetooth and Location permissions",
+//                        PERMISSION_REQUEST_BLUETOOTH_CODE,
+//                        Manifest.permission.BLUETOOTH_SCAN,
+//                    )
+//                    return@postDelayed
+//                }
+//                if (ActivityCompat.checkSelfPermission(
+//                        this,
+//                        Manifest.permission.ACCESS_FINE_LOCATION
+//                    ) != PackageManager.PERMISSION_GRANTED
+//                ) {
+//                    EasyPermissions.requestPermissions(
+//                        this,
+//                        "Bluetooth and Location permissions",
+//                        PERMISSION_REQUEST_BLUETOOTH_CODE,
+//                        Manifest.permission.ACCESS_FINE_LOCATION,
+//                    )
+//                    return@postDelayed
+//                }
+//                if (ActivityCompat.checkSelfPermission(
+//                        this,
+//                        Manifest.permission.ACCESS_COARSE_LOCATION
+//                    ) != PackageManager.PERMISSION_GRANTED
+//                ) {
+//                    EasyPermissions.requestPermissions(
+//                        this,
+//                        "Bluetooth and Location permissions",
+//                        PERMISSION_REQUEST_BLUETOOTH_CODE,
+//                        Manifest.permission.ACCESS_COARSE_LOCATION,
+//                    )
+//                    return@postDelayed
+//                }
+//                bluetoothLeScanner?.stopScan(leScanCallback)
+//            }, SCAN_PERIOD)
+//            scanning = true
+//            bluetoothLeScanner?.startScan(leScanCallback)
+//        } else {
+//            scanning = false
+//            bluetoothLeScanner?.stopScan(leScanCallback)
+//        }
+//    }
+//
+//    @OptIn(DelicateCoroutinesApi::class)
+//    private val leScanCallback: ScanCallback = object : ScanCallback() {
+//        @RequiresApi(Build.VERSION_CODES.Q)
+//        override fun onScanResult(callbackType: Int, result: ScanResult) {
+//            super.onScanResult(callbackType, result)
+//            Log.d("dataMonitoring", event.value.id)
+//            val scanRecord = result.scanRecord
+//
+//            if (scanRecord != null && scanRecord.serviceUuids != null && scanRecord.serviceUuids.size > 0) {
+////                Log.d("bleScan", event.value.id)
+//                val data = scanRecord.serviceUuids[0].toString()
+//                Log.d("bleScan", data)
+////                val attendeesList = event.value.attendeesList
+//                val attendeesList = event.value.attendeesList
+//                if (attendeesList.contains(data)){
+//                    for (attendance in attendees) {
+//                        if (attendance.id == data) {
+//                            if (attendance.firstTimeSeen == "") {
+//                                attendance.firstTimeSeen = LocalTime.now().hour.toString() + ":" + LocalTime.now().minute.toString()
+//                                attendance.lastTimeSeen = attendance.firstTimeSeen
+//                            } else {
+//                                attendance.lastTimeSeen = LocalTime.now().hour.toString() + ":" + LocalTime.now().minute.toString()
+//                            }
+//                            GlobalScope.launch {
+//                                storageService.updateAttendee(attendance)
+//                            }
+//                            leDeviceListAdapter.addDevice(attendance)
+//                        }
+//                    }
+//                }
+//            }
+//        }
+//    }
+
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     fun advertise(){
         val advertiser = BluetoothAdapter.getDefaultAdapter().bluetoothLeAdvertiser
-        val parcelUuid = ParcelUuid(UUID.fromString("1b43d840-f655-44c0-b25b-ba00b0a77ce5"))
+//        val parcelUuid = ParcelUuid(UUID.fromString("1b43d840-f655-44c0-b25b-ba00b0a77ce5"))
+        val parcelUuid = ParcelUuid(UUID.fromString(attendanceId))
         //TODO here set parcel UUID to be the UUID id of the user
 
         val parameters = AdvertisingSetParameters.Builder()
@@ -237,10 +362,11 @@ class BLEActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks{
             }
         }
 
+        Log.d("bleScan", data.serviceUuids.toString())
         advertiser.startAdvertisingSet(parameters, data, null, null, null, callback)
     }
 
-    fun startBluetooth() {
+    private fun startBluetooth() {
         val bluetoothManager: BluetoothManager = getSystemService(BluetoothManager::class.java)
         val bluetoothAdapter: BluetoothAdapter? = bluetoothManager.getAdapter()
         if (bluetoothAdapter?.isEnabled == false) {
@@ -256,7 +382,7 @@ class BLEActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks{
         }
     }
 
-    fun startLocation() {
+    private fun startLocation() {
         val locationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
         val isGpsEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)
         if (!isGpsEnabled){
@@ -271,31 +397,6 @@ class BLEActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks{
                 dialog.dismiss()
             }
             builder.create().show()
-        }
-    }
-}
-
-@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun show(leDeviceListAdapter: LeDeviceListAdapter) {
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                colors = TopAppBarDefaults.smallTopAppBarColors(containerColor = Color.Blue),
-                title = {
-                    Text(text = "Participants", color = Color.White)
-                }
-            )
-        }
-    ) {
-        Column (
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(8.dp)
-        ) {
-            Spacer(modifier = Modifier.height(60.dp))
-            BluetoothListScreen(deviceListAdaptor = leDeviceListAdapter)
         }
     }
 }
