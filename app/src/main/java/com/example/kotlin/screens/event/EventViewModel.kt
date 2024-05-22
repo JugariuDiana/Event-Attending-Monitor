@@ -8,7 +8,7 @@ import com.example.kotlin.storage.StorageService
 import com.example.kotlin.domain.Attendee
 import com.example.kotlin.domain.Event
 import com.example.kotlin.domain.User
-import com.example.kotlin.screens.AppViewModel
+import com.example.kotlin.AppViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import java.util.UUID

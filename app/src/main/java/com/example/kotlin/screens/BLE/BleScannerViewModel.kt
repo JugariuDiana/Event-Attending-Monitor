@@ -11,21 +11,25 @@ import android.os.Build
 import android.os.Handler
 import android.util.Log
 import androidx.annotation.RequiresApi
+import androidx.compose.runtime.collectAsState
 import androidx.core.app.ActivityCompat
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.kotlin.AppViewModel
 import com.example.kotlin.EVENT_DEFAULT_ID
 import com.example.kotlin.ORGANIZER_DEFAULT_ID
 import com.example.kotlin.PERMISSION_REQUEST_BLUETOOTH_CODE
-import com.example.kotlin.SPLASH_SCREEN
 import com.example.kotlin.activities.BLEActivity
 import com.example.kotlin.domain.Attendee
 import com.example.kotlin.domain.Event
 import com.example.kotlin.domain.User
-import com.example.kotlin.screens.AppViewModel
 import com.example.kotlin.storage.AccountService
 import com.example.kotlin.storage.StorageService
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.first
 import pub.devrel.easypermissions.EasyPermissions
 import java.time.LocalTime
 import javax.inject.Inject
@@ -33,7 +37,7 @@ import javax.inject.Inject
 @HiltViewModel
 class BleScannerViewModel @Inject constructor(
     private val accountService: AccountService,
-    private val storageService: StorageService,
+    private val storageService: StorageService
 ) : AppViewModel() {
     private var bluetoothAdapter: BluetoothAdapter? = BluetoothAdapter.getDefaultAdapter()
     private var bluetoothLeScanner : BluetoothLeScanner? = bluetoothAdapter?.bluetoothLeScanner
@@ -46,17 +50,27 @@ class BleScannerViewModel @Inject constructor(
     private val users = storageService.users
     lateinit var attendees: List<Attendee>
 
-    suspend fun getAttendeeName(userId: String) : String{
-        var attendeeName = "User not found"
-        Log.d("dataMonitoring", event.value.id)
-        Log.d("dataMonitoring", userId)
-        users.collect { userList ->
-            val user = userList.find { it.id == userId }
-            if (user != null) {
-                attendeeName = user.name
+    private val _deviceList = MutableStateFlow<List<Attendee>>(emptyList())
+    val deviceList: StateFlow<List<Attendee>> get() = _deviceList
+
+    suspend fun getAttendeeName(userId: String): String {
+        val usersList = users.first()
+        return usersList.find { it.id == userId }?.name!!
+    }
+
+    fun initialize(eventId: String){
+        launchCatching {
+            event.value = storageService.readEvent(eventId)!!
+            userInformation.value = accountService.getUser(accountService.currentUserId)!!
+            attendees = storageService.getEventAttendees(event.value.attendeesList)
+        }
+    }
+    init {
+        launchCatching {
+            leDeviceListAdapter.deviceList.collect { deviceList ->
+                _deviceList.value = deviceList
             }
         }
-        return attendeeName
     }
 
     @RequiresApi(Build.VERSION_CODES.S)
@@ -64,37 +78,9 @@ class BleScannerViewModel @Inject constructor(
         while (true)
         {
             scanLeDevice(context, activity)
-            delay(2000) // Must change, maybe scan for 1 minute every five minutes
+            delay(20000) // Must change, maybe scan for 1 minute every five minutes
             Log.d("dataMonitoring", "start scanning again")
-//            leDeviceListAdapter.emptyList()
-        }
-    }
-
-    fun initialize(eventId: String, restartApp: (String) -> Unit) {
-        launchCatching {
-//            event.value = storageService.readEvent(eventId)!!
-////            event = storageService.readEvent(eventId)!!
-////            userInformation = accountService.getUser((accountService.currentUserId))!!
-//            Log.d("dataMonitoring", eventId + "-> " + event.value)
-//            userInformation.value = accountService.getUser(accountService.currentUserId)!!
-//            Log.d("dataMonitoring","user -> " + userInformation.value)
-//            attendees = storageService.getEventAttendees(event.value.attendeesList)
-//            Log.d("dataMonitoring", "attendees -> " + attendees.size)
-
-                event.value = storageService.readEvent(eventId)!!
-                userInformation.value = accountService.getUser(accountService.currentUserId)!!
-                attendees = storageService.getEventAttendees(event.value.attendeesList)
-
-        }
-        //observeAuthenticationState(restartApp)
-        Log.d("dataMonitoring", "after restart situation" + event.value.id)
-    }
-
-    private fun observeAuthenticationState(restartApp: (String) -> Unit) {
-        launchCatching {
-            accountService.currentUser.collect { user ->
-                if (user == null) restartApp(SPLASH_SCREEN)
-            }
+            leDeviceListAdapter.emptyList()
         }
     }
 
@@ -164,11 +150,10 @@ class BleScannerViewModel @Inject constructor(
             var data = ""
 
             if (scanRecord != null && scanRecord.serviceUuids != null && scanRecord.serviceUuids.size > 0) {
-//                Log.d("bleScan", event.value.id)
                 data = scanRecord.serviceUuids[0].toString()
-                Log.d("bleScan", data)
-//                val attendeesList = event.value.attendeesList
+
                 val attendeesList = event.value.attendeesList
+
                 if (attendeesList.contains(data)){
                     for (attendance in attendees) {
                         if (attendance.id == data) {

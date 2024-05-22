@@ -1,6 +1,6 @@
 package com.example.kotlin.screens.SignIn
 
-import com.example.kotlin.screens.AppViewModel
+import com.example.kotlin.AppViewModel
 import com.example.kotlin.EVENT_LIST_SCREEN
 import com.example.kotlin.SIGN_IN_SCREEN
 import com.example.kotlin.SIGN_UP_SCREEN

@@ -10,9 +10,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.navigation.ActivityNavigatorDestinationBuilder
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.activity
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -98,19 +98,20 @@ fun NavGraphBuilder.AppGraph(appState: AppState) {
     activity(
         route = "$BLE_ACTIVITY/{$EVENT_ID}"
     ){
-        BLEActivity()
+        argument("eventId"){type = NavType.StringType}
+        activityClass = BLEActivity::class
     }
 
-    composable(
-        route = "$BLUETOOTH_LIST_SCREEN/{$EVENT_ID}",
-        arguments = listOf(navArgument(EVENT_ID) {defaultValue = ""})
-    ) {
-        BluetoothListScreen(
-            eventId = it.arguments?.getString(EVENT_ID) ?: "",
-            popUpScreen = { appState.popUp() },
-            restartApp = { route -> appState.clearAndNavigate(route) }
-        )
-    }
+//    composable(
+//        route = "$BLUETOOTH_LIST_SCREEN/{$EVENT_ID}",
+//        arguments = listOf(navArgument(EVENT_ID) {defaultValue = ""})
+//    ) {
+//        BluetoothListScreen(
+//            eventId = it.arguments?.getString(EVENT_ID) ?: "",
+//            popUpScreen = { appState.popUp() },
+//            restartApp = { route -> appState.clearAndNavigate(route) }
+//        )
+//    }
 
     composable(
         route = "$REGISTER_EVENT_SCREEN/{$EVENT_ID}",

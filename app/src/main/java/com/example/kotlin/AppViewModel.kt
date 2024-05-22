@@ -1,4 +1,4 @@
-package com.example.kotlin.screens
+package com.example.kotlin
 
 import android.util.Log
 import androidx.lifecycle.ViewModel

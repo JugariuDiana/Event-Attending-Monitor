@@ -5,7 +5,7 @@ import com.example.kotlin.SIGN_UP_SCREEN
 import com.example.kotlin.USERS_COLLECTION
 import com.example.kotlin.storage.AccountService
 import com.example.kotlin.domain.User
-import com.example.kotlin.screens.AppViewModel
+import com.example.kotlin.AppViewModel
 import com.google.firebase.database.FirebaseDatabase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow

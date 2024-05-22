@@ -1,8 +1,10 @@
 package com.example.kotlin.screens.BLE
 
-import android.content.Intent
 import android.os.Build
+import android.util.Log
 import androidx.annotation.RequiresApi
+import androidx.compose.animation.animateContentSize
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -12,29 +14,24 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.unit.dp
-import androidx.core.content.ContextCompat.startActivity
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.example.kotlin.R
-import com.example.kotlin.activities.BLEActivity
 import com.example.kotlin.domain.Attendee
 
 
@@ -42,35 +39,16 @@ import com.example.kotlin.domain.Attendee
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BluetoothListScreen(
-    eventId: String,
-    popUpScreen: () -> Unit,
-    restartApp: (String) -> Unit,
-    modifier: Modifier = Modifier,
     viewModel: BleScannerViewModel = hiltViewModel(),
-    deviceListAdaptor: LeDeviceListAdapter = LeDeviceListAdapter()
 ) {
-    //    LaunchedEffect(Unit) {
-//        context.startActivity(Intent(context, BLEActivity::class.java).apply {
-//            putExtra("eventId", eventId)
-//        })
-//    }
-
-    val intent = Intent(LocalContext.current, BLEActivity::class.java)
-    intent.putExtra("eventId", eventId)
-    startActivity(LocalContext.current, intent, null)
-    val attendees by deviceListAdaptor.deviceList.collectAsStateWithLifecycle(emptyList())
-    LaunchedEffect(Unit) { viewModel.initialize(eventId, restartApp) }
+    val attendees by viewModel.deviceList.collectAsStateWithLifecycle(emptyList())
+//    LaunchedEffect(Unit) { viewModel.initialize(eventId, restartApp) }
 
     Column(modifier = Modifier
         .fillMaxWidth()
         .fillMaxHeight()) {
         TopAppBar(
-            title = { Text(stringResource(R.string.app_name)) },
-            actions = {
-                IconButton(onClick = popUpScreen) {
-                    Icon(Icons.Filled.ArrowBack, "Back")
-                }
-            }
+            title = { Text("Participants") },
         )
 
         Spacer(modifier = Modifier
@@ -106,11 +84,12 @@ fun BluetoothListScreen(
 fun AttendanceItem(
     viewModel: BleScannerViewModel,
     attendee: Attendee
-){
-    val attendeeName by produceState(initialValue = "", viewModel, attendee) {
-        value = viewModel.getAttendeeName(attendee.userId)
-    }
+) {
+    var attendeeName by remember { mutableStateOf("Loading...") }
 
+    LaunchedEffect(attendee.userId) {
+        attendeeName = viewModel.getAttendeeName(attendee.userId)
+    }
 
     Card(
         modifier = Modifier.padding(8.dp, 0.dp, 8.dp, 8.dp)
@@ -121,12 +100,11 @@ fun AttendanceItem(
                 .fillMaxWidth()
         ) {
             Text(
-                text = attendeeName,
-                modifier = Modifier.padding(12.dp, 12.dp, 12.dp, 12.dp),
+                text = attendeeName + ": " + attendee.firstTimeSeen + "->" + attendee.lastTimeSeen,
+                modifier = Modifier
+                    .padding(12.dp),
                 style = MaterialTheme.typography.bodyLarge
             )
-            Text(text = attendee.firstTimeSeen + "->" + attendee.lastTimeSeen,
-                style = MaterialTheme.typography.bodyLarge )
         }
     }
 }

@@ -6,7 +6,6 @@ import android.os.Build
 import androidx.annotation.RequiresApi
 import com.example.kotlin.ADD_EVENT_SCREEN
 import com.example.kotlin.BLE_ACTIVITY
-import com.example.kotlin.BLUETOOTH_LIST_SCREEN
 import com.example.kotlin.EVENT_SCREEN
 import com.example.kotlin.REGISTER_EVENT_SCREEN
 import com.example.kotlin.SPLASH_SCREEN
@@ -15,7 +14,7 @@ import com.example.kotlin.storage.AccountService
 import com.example.kotlin.storage.StorageService
 import com.example.kotlin.domain.Event
 import com.example.kotlin.domain.User
-import com.example.kotlin.screens.AppViewModel
+import com.example.kotlin.AppViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -52,7 +51,6 @@ class EventListViewModel @Inject constructor(
                 if (attendance.userId == user.id) {
                     if (eventIsRunning(event)){
                         openScreen("$BLE_ACTIVITY/${event.id}")
-//                        openScreen("$BLUETOOTH_LIST_SCREEN/${event.id}")
                         return@launchCatching
                     }
                     openScreen("$UNREGISTER_EVENT_SCREEN/${event.id}")

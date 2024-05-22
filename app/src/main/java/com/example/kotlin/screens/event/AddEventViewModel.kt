@@ -6,7 +6,7 @@ import com.example.kotlin.EVENT_DEFAULT_ID
 import com.example.kotlin.ORGANIZER_DEFAULT_ID
 import com.example.kotlin.storage.StorageService
 import com.example.kotlin.domain.Event
-import com.example.kotlin.screens.AppViewModel
+import com.example.kotlin.AppViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import java.time.LocalDate
