@@ -7,6 +7,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.getAndUpdate
 
 class  LeDeviceListAdapter:ViewModel() {
     private val list = emptyList<Attendee>()
@@ -18,12 +19,31 @@ class  LeDeviceListAdapter:ViewModel() {
         emit(deviceList)}
     }
 
+//    fun addDevice(attendee: Attendee) {
+//        Log.d("bleScan", "adding device + ${attendee.id}")
+//        val currentList = _deviceList.value
+//        if (currentList.none { it.id == attendee.id }) {
+//            _deviceList.value = currentList + attendee
+//        } else {
+//            for (device in _deviceList.value){
+//                if (device.id == attendee.id){
+//                    device.lastTimeSeen = attendee.id
+//                }
+//            }
+//        }
+//    }
+
     fun addDevice(attendee: Attendee) {
-        Log.d("bleScan", "adding device + ${attendee.id}")
-        val currentList = _deviceList.value
-        if (currentList.none { it.id == attendee.id }) {
-            _deviceList.value = currentList + attendee
+        val currentList = _deviceList.value.toMutableList()
+        val existingIndex = currentList.indexOfFirst { it.id == attendee.id }
+
+        if (existingIndex != -1) {
+            currentList[existingIndex] = attendee
+        } else {
+            currentList.add(attendee)
         }
+
+        _deviceList.value = currentList
     }
 
     fun emptyList(){

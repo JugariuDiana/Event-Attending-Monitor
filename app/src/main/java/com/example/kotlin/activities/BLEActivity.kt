@@ -86,29 +86,24 @@ class BLEActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks{
             attendanceId = storageService.getUsersAttendance(accountService.currentUserId, event.value.attendeesList)
             userInformation.value = accountService.getUser(accountService.currentUserId)!!
             attendees = storageService.getEventAttendees(event.value.attendeesList)
-            if (!hasPermissions()){
+            while (!hasPermissions()){
                 requestPermissionsForScan()
-            } else {
-                onPermissionsGranted()
             }
+
+            while (!isEnabledLocation()){
+                startLocation()
+            }
+
+            while (isEnabledBluetooth() != true){
+                startBluetooth()
+            }
+
+            onPermissionsGranted()
         }
 
         setContent {
             BluetoothListScreen()
         }
-    }
-
-    suspend fun getAttendeeName(userId: String) : String{
-        var attendeeName = "User not found"
-        Log.d("dataMonitoring", event.value.id)
-        Log.d("dataMonitoring", userId)
-        users.collect { userList ->
-            val user = userList.find { it.id == userId }
-            if (user != null) {
-                attendeeName = user.name
-            }
-        }
-        return attendeeName
     }
 
     @RequiresApi(Build.VERSION_CODES.S)
@@ -156,8 +151,6 @@ class BLEActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks{
     @AfterPermissionGranted(PERMISSION_REQUEST_BLUETOOTH_CODE)
     fun onPermissionsGranted() {
         permissionGranted = true
-        startBluetooth()
-        startLocation()
         if (isEnabledBluetooth() == true && isEnabledLocation()){
             GlobalScope.launch {
                 while (attendanceId.isEmpty()){
@@ -211,7 +204,6 @@ class BLEActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks{
     fun advertise(){
         val advertiser = BluetoothAdapter.getDefaultAdapter().bluetoothLeAdvertiser
         val parcelUuid = ParcelUuid(UUID.fromString(attendanceId))
-        //TODO here set parcel UUID to be the UUID id of the user
 
         val parameters = AdvertisingSetParameters.Builder()
             .setLegacyMode(true) // True by default, but set here as a reminder.
