@@ -24,10 +24,10 @@ import com.example.kotlin.storage.AccountService
 import com.example.kotlin.storage.StorageService
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import pub.devrel.easypermissions.EasyPermissions
 import java.time.LocalTime
 import javax.inject.Inject
@@ -44,22 +44,21 @@ class BleScannerViewModel @Inject constructor(
     private val SCAN_PERIOD: Long = 20000 //20 seconds
     val event = MutableStateFlow(Event(EVENT_DEFAULT_ID, ORGANIZER_DEFAULT_ID))
     private var userInformation = MutableStateFlow(User())
-    private val users = storageService.users
     lateinit var attendees: List<Attendee>
 
-
     private val _deviceList: MutableStateFlow<List<Attendee>> = MutableStateFlow(emptyList<Attendee>())
-    val deviceList: Flow<List<Attendee>>
-        get() = flow {
-        while (true){
-            val deviceList = _deviceList.value
-            delay(100)
-            emit(deviceList)}
-    }
+    val deviceList: StateFlow<List<Attendee>> get() = _deviceList.asStateFlow()
+//    val deviceList: Flow<List<Attendee>>
+//        get() = flow {
+//        while (true){
+//            val deviceList = _deviceList.value
+//            delay(100)
+//            emit(deviceList)}
+//    }
 
     suspend fun getAttendeeName(userId: String): String {
-        val usersList = users.first()
-        return usersList.find { it.id == userId }?.name!!
+        val user = storageService.getUser(userId) ?: return "can not load name"
+        return user.name
     }
 
     fun initialize(eventId: String){
@@ -73,11 +72,10 @@ class BleScannerViewModel @Inject constructor(
     @RequiresApi(Build.VERSION_CODES.S)
     suspend fun scan(context: Context, activity: BLEActivity){
         while (true) {
-            if (accountService.currentUserId == event.value.organizerId) {
-                scanLeDevice(context, activity)
-                delay(20000) // Must change, maybe scan for 1 minute every five minutes
-                Log.d("dataMonitoring", "start scanning again")
-            }
+            scanLeDevice(context, activity)
+            delay(20000) // Must change, maybe scan for 1 minute every five minutes
+            Log.d("dataMonitoring", "start scanning again")
+            _deviceList.value = emptyList()
         }
     }
 
@@ -178,7 +176,13 @@ class BleScannerViewModel @Inject constructor(
                             }
 
                             if (!currentUserAttendance.attendees.contains(data)) {
-                                attendance.attendees = attendance.attendees + data
+                                currentUserAttendance.attendees = currentUserAttendance.attendees + data
+                            }
+
+                            for (foundAttendee in attendance.attendees){
+                                if (!currentUserAttendance.attendees.contains(foundAttendee)){
+                                    currentUserAttendance.attendees += foundAttendee
+                                }
                             }
 
                             launchCatching {
@@ -193,13 +197,14 @@ class BleScannerViewModel @Inject constructor(
     }
 
     private val leScanCallbackOrganizer: ScanCallback = object : ScanCallback() {
-        @RequiresApi(Build.VERSION_CODES.Q)
+        @RequiresApi(Build.VERSION_CODES.TIRAMISU)
         override fun onScanResult(callbackType: Int, result: ScanResult) {
             super.onScanResult(callbackType, result)
             Log.d("dataMonitoring", event.value.id)
             val scanRecord = result.scanRecord
             val data: String
             val currentUserAttendance = getCurrentUserAttendance()!!
+            var foundAttendees = emptyList<Attendee>()
 
             if (scanRecord != null && scanRecord.serviceUuids != null && scanRecord.serviceUuids.size > 0) {
                 data = scanRecord.serviceUuids[0].toString()
@@ -217,16 +222,31 @@ class BleScannerViewModel @Inject constructor(
                             }
 
                             if (!currentUserAttendance.attendees.contains(data)) {
-                                attendance.attendees = attendance.attendees + data
+                                currentUserAttendance.attendees = currentUserAttendance.attendees + data
+                            }
+
+                            for (foundAttendee in attendance.attendees){
+                                if (!currentUserAttendance.attendees.contains(foundAttendee)){
+                                    currentUserAttendance.attendees += foundAttendee
+                                }
                             }
 
                             launchCatching {
                                 storageService.updateAttendee(attendance)
                             }
-                            addDevice(attendance)
 
+                            launchCatching { addDevice(attendance) }
+
+                            launchCatching {
                             for (previouslyDetectedAttendance in attendance.attendees){
-                                addDevice(getAttendance(previouslyDetectedAttendance)!!)
+                                    val objectAttendee = getAttendance(previouslyDetectedAttendance)
+                                    while (objectAttendee == null){
+                                        delay(100)
+                                    }
+                                    launchCatching {
+                                        addDevice(objectAttendee)
+                                    }
+                                }
                             }
                         }
                     }
@@ -234,21 +254,20 @@ class BleScannerViewModel @Inject constructor(
             }
         }
     }
-
     fun addDevice(attendee: Attendee) {
-        val currentList = _deviceList.value.toMutableList()
-        val existingIndex = currentList.indexOfFirst { it.id == attendee.id }
-
-        if (existingIndex != -1) {
-            currentList[existingIndex] = attendee
-        } else {
-            currentList.add(attendee)
+        _deviceList.update { currentList ->
+            val existingIndex = currentList.indexOfFirst { it.id == attendee.id }
+            if (existingIndex != -1) {
+                currentList.toMutableList().apply {
+                    this[existingIndex] = attendee
+                }
+            } else {
+                currentList + attendee
+            }
         }
-
-        _deviceList.swapList(currentList)
     }
 
-    fun <T> MutableStateFlow<T>.swapList(newList: MutableList<Attendee>){
-        //Todo - check phone to make sure list update is correct
-    }
+//    fun <T> MutableStateFlow<T>.swapList(newList: MutableList<Attendee>){
+//        //Todo - check phone to make sure list update is correct
+//    }
 }

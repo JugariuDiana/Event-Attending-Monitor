@@ -90,13 +90,15 @@ class BLEActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks{
                 requestPermissionsForScan()
             }
 
-            while (!isEnabledLocation()){
-                startLocation()
-            }
-
-            while (isEnabledBluetooth() != true){
-                startBluetooth()
-            }
+            startLocation()
+            startBluetooth()
+//            while (!isEnabledLocation()){
+//                startLocation()
+//            }
+//
+//            while (isEnabledBluetooth() != true){
+//                startBluetooth()
+//            }
 
             onPermissionsGranted()
         }
