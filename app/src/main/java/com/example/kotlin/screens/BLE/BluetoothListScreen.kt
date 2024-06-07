@@ -43,7 +43,7 @@ fun BluetoothListScreen(
         .fillMaxWidth()
         .fillMaxHeight()) {
         TopAppBar(
-            title = { Text("Participants") },
+            title = { Text("${viewModel.event.value.name} -> ${viewModel.event.value.location} : Participants") },
         )
 
         Spacer(modifier = Modifier

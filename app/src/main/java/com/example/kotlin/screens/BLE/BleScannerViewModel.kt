@@ -41,7 +41,7 @@ class BleScannerViewModel @Inject constructor(
     private var bluetoothLeScanner : BluetoothLeScanner? = bluetoothAdapter?.bluetoothLeScanner
     private var scanning = false
     private val handler = Handler()
-    private val SCAN_PERIOD: Long = 20000 //20 seconds
+    private val SCAN_PERIOD: Long = 200000 //20 seconds
     val event = MutableStateFlow(Event(EVENT_DEFAULT_ID, ORGANIZER_DEFAULT_ID))
     private var userInformation = MutableStateFlow(User())
     lateinit var attendees: List<Attendee>
@@ -166,6 +166,7 @@ class BleScannerViewModel @Inject constructor(
                 val attendeesList = event.value.attendeesList
 
                 if (attendeesList.contains(data)){
+                    Log.d("shutDown", "$data -> ${LocalTime.now()}")
                     for (attendance in attendees) {
                         if (attendance.id == data) {
                             if (attendance.firstTimeSeen == "") {
@@ -183,6 +184,10 @@ class BleScannerViewModel @Inject constructor(
                                 if (!currentUserAttendance.attendees.contains(foundAttendee)){
                                     currentUserAttendance.attendees += foundAttendee
                                 }
+                            }
+
+                            launchCatching {
+                                storageService.updateAttendee(currentUserAttendance)
                             }
 
                             launchCatching {
@@ -225,11 +230,11 @@ class BleScannerViewModel @Inject constructor(
                                 currentUserAttendance.attendees = currentUserAttendance.attendees + data
                             }
 
-                            for (foundAttendee in attendance.attendees){
-                                if (!currentUserAttendance.attendees.contains(foundAttendee)){
-                                    currentUserAttendance.attendees += foundAttendee
-                                }
-                            }
+//                            for (foundAttendee in attendance.attendees){
+//                                if (!currentUserAttendance.attendees.contains(foundAttendee)){
+//                                    currentUserAttendance.attendees += foundAttendee
+//                                }
+//                            }
 
                             launchCatching {
                                 storageService.updateAttendee(attendance)
@@ -244,7 +249,8 @@ class BleScannerViewModel @Inject constructor(
                                         delay(100)
                                     }
                                     launchCatching {
-                                        addDevice(objectAttendee)
+                                        if (objectAttendee.userId != event.value.organizerId)
+                                            addDevice(objectAttendee)
                                     }
                                 }
                             }
