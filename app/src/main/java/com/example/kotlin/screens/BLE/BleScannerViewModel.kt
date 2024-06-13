@@ -45,6 +45,7 @@ class BleScannerViewModel @Inject constructor(
     val event = MutableStateFlow(Event(EVENT_DEFAULT_ID, ORGANIZER_DEFAULT_ID))
     private var userInformation = MutableStateFlow(User())
     lateinit var attendees: List<Attendee>
+    lateinit var context: Context
 
     private val _deviceList: MutableStateFlow<List<Attendee>> = MutableStateFlow(emptyList<Attendee>())
     val deviceList: StateFlow<List<Attendee>> get() = _deviceList.asStateFlow()
@@ -55,6 +56,27 @@ class BleScannerViewModel @Inject constructor(
 //            delay(100)
 //            emit(deviceList)}
 //    }
+
+    override fun onCleared() {
+        super.onCleared()
+        stopBleScanning()
+    }
+
+    private fun stopBleScanning() {
+        if (scanning) {
+            if (ActivityCompat.checkSelfPermission(
+                    context,
+                    Manifest.permission.BLUETOOTH_SCAN
+                ) != PackageManager.PERMISSION_GRANTED
+            ) {
+                return
+            }
+            bluetoothLeScanner?.stopScan(leScanCallback)
+            bluetoothLeScanner?.stopScan(leScanCallbackOrganizer)
+            scanning = false
+        }
+        handler.removeCallbacksAndMessages(null)
+    }
 
     suspend fun getAttendeeName(userId: String): String {
         val user = storageService.getUser(userId) ?: return "can not load name"
@@ -71,11 +93,11 @@ class BleScannerViewModel @Inject constructor(
 
     @RequiresApi(Build.VERSION_CODES.S)
     suspend fun scan(context: Context, activity: BLEActivity){
+        this.context = context
         while (true) {
             scanLeDevice(context, activity)
             delay(20000) // Must change, maybe scan for 1 minute every five minutes
             Log.d("dataMonitoring", "start scanning again")
-            _deviceList.value = emptyList()
         }
     }
 
@@ -140,6 +162,7 @@ class BleScannerViewModel @Inject constructor(
         } else {
             scanning = false
             bluetoothLeScanner?.stopScan(callback)
+            handler.removeCallbacksAndMessages(null)
         }
     }
 

@@ -1,5 +1,6 @@
 package com.example.kotlin.screens.BLE
 
+import android.annotation.SuppressLint
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Column
@@ -31,6 +32,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.kotlin.domain.Attendee
 
 
+@SuppressLint("StateFlowValueCalledInComposition")
 @RequiresApi(Build.VERSION_CODES.TIRAMISU)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
