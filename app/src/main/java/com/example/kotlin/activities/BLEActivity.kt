@@ -67,47 +67,48 @@ class BLEActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks{
     lateinit var bleScannerViewModel: BleScannerViewModel
 
     private var currentAdvertisingSet: AdvertisingSet? = null
+    private var currentCallback: AdvertisingSetCallback? = null
     private lateinit var parcelUuid: ParcelUuid
 
-    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
-    private val advertisingCallback: AdvertisingSetCallback = object : AdvertisingSetCallback() {
-        override fun onAdvertisingSetStarted(advertisingSet: AdvertisingSet, txPower: Int, status: Int) {
-            Log.i(LOG_TAG, "onAdvertisingSetStarted(): txPower:$txPower, status:$status")
-            currentAdvertisingSet = advertisingSet
-            if (ActivityCompat.checkSelfPermission(
-                    this@BLEActivity,
-                    Manifest.permission.BLUETOOTH_ADVERTISE
-                ) != PackageManager.PERMISSION_GRANTED
-            ) {
-                EasyPermissions.requestPermissions(
-                    this@BLEActivity,
-                    "Bluetooth and Location permissions",
-                    PERMISSION_REQUEST_BLUETOOTH_CODE,
-                    Manifest.permission.BLUETOOTH_ADVERTISE
-                )
-                return
-            }
-
-            currentAdvertisingSet?.setAdvertisingData(
-                AdvertiseData.Builder().setIncludeDeviceName(true).setIncludeTxPowerLevel(true).build()
-            )
-            currentAdvertisingSet?.setScanResponseData(
-                AdvertiseData.Builder().addServiceUuid(parcelUuid).build()
-            )
-        }
-
-        override fun onAdvertisingDataSet(advertisingSet: AdvertisingSet, status: Int) {
-            Log.i(LOG_TAG, "onAdvertisingDataSet(): status:$status")
-        }
-
-        override fun onScanResponseDataSet(advertisingSet: AdvertisingSet, status: Int) {
-            Log.i(LOG_TAG, "onScanResponseDataSet(): status:$status")
-        }
-
-        override fun onAdvertisingSetStopped(advertisingSet: AdvertisingSet) {
-            Log.i(LOG_TAG, "onAdvertisingSetStopped()")
-        }
-    }
+//    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
+//    private var advertisingCallback: AdvertisingSetCallback = object : AdvertisingSetCallback() {
+//        override fun onAdvertisingSetStarted(advertisingSet: AdvertisingSet, txPower: Int, status: Int) {
+//            Log.i(LOG_TAG, "onAdvertisingSetStarted(): txPower:$txPower, status:$status")
+//            currentAdvertisingSet = advertisingSet
+//            if (ActivityCompat.checkSelfPermission(
+//                    this@BLEActivity,
+//                    Manifest.permission.BLUETOOTH_ADVERTISE
+//                ) != PackageManager.PERMISSION_GRANTED
+//            ) {
+//                EasyPermissions.requestPermissions(
+//                    this@BLEActivity,
+//                    "Bluetooth and Location permissions",
+//                    PERMISSION_REQUEST_BLUETOOTH_CODE,
+//                    Manifest.permission.BLUETOOTH_ADVERTISE
+//                )
+//                return
+//            }
+//
+//            currentAdvertisingSet?.setAdvertisingData(
+//                AdvertiseData.Builder().setIncludeDeviceName(true).setIncludeTxPowerLevel(true).build()
+//            )
+//            currentAdvertisingSet?.setScanResponseData(
+//                AdvertiseData.Builder().addServiceUuid(parcelUuid).build()
+//            )
+//        }
+//
+//        override fun onAdvertisingDataSet(advertisingSet: AdvertisingSet, status: Int) {
+//            Log.i(LOG_TAG, "onAdvertisingDataSet(): status:$status")
+//        }
+//
+//        override fun onScanResponseDataSet(advertisingSet: AdvertisingSet, status: Int) {
+//            Log.i(LOG_TAG, "onScanResponseDataSet(): status:$status")
+//        }
+//
+//        override fun onAdvertisingSetStopped(advertisingSet: AdvertisingSet) {
+//            Log.i(LOG_TAG, "onAdvertisingSetStopped()")
+//        }
+//    }
 
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -240,13 +241,17 @@ class BLEActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks{
     fun advertise() {
         parcelUuid = ParcelUuid(UUID.fromString(attendanceId))
 
-        // Stop any ongoing advertising set before starting a new one
-        if (ActivityCompat.checkSelfPermission(
-                this,
-                Manifest.permission.BLUETOOTH_ADVERTISE
-            ) != PackageManager.PERMISSION_GRANTED
-        ) {
-            return
+        currentAdvertisingSet?.let {
+            if (ActivityCompat.checkSelfPermission(
+                    this,
+                    Manifest.permission.BLUETOOTH_ADVERTISE
+                ) != PackageManager.PERMISSION_GRANTED
+            ) {
+                return
+            }
+            advertiser.stopAdvertisingSet(currentCallback)
+            currentAdvertisingSet = null
+            currentCallback = null
         }
 
         val parameters = AdvertisingSetParameters.Builder()
@@ -263,7 +268,30 @@ class BLEActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks{
             .build()
 
         Log.d("bleScan", data.serviceUuids.toString())
-        advertiser.startAdvertisingSet(parameters, data, null, null, null, advertisingCallback)
+        currentCallback = object : AdvertisingSetCallback() {
+            override fun onAdvertisingSetStarted(
+                advertisingSet: AdvertisingSet?,
+                txPower: Int,
+                status: Int
+            ) {
+                super.onAdvertisingSetStarted(advertisingSet, txPower, status)
+                if (status == AdvertisingSetCallback.ADVERTISE_SUCCESS) {
+                    currentAdvertisingSet = advertisingSet
+                    Log.d("BLE", "Advertising set started successfully")
+                } else {
+                    Log.e("BLE", "Advertising set failed to start with status: $status")
+                }
+            }
+
+            override fun onAdvertisingSetStopped(advertisingSet: AdvertisingSet?) {
+                super.onAdvertisingSetStopped(advertisingSet)
+                Log.d("BLE", "Advertising set stopped")
+                currentAdvertisingSet = null
+                currentCallback = null
+            }
+        }
+
+        advertiser.startAdvertisingSet(parameters, data, null, null, null, currentCallback)
     }
 
     private fun startBluetooth() {
@@ -303,13 +331,12 @@ class BLEActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks{
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     override fun onDestroy() {
         super.onDestroy()
-        // Stop advertising when the activity is destroyed
         if (ActivityCompat.checkSelfPermission(
                 this,
                 Manifest.permission.BLUETOOTH_ADVERTISE
             ) == PackageManager.PERMISSION_GRANTED
         ) {
-            advertiser.stopAdvertisingSet(advertisingCallback)
+            advertiser.stopAdvertisingSet(currentCallback)
         }
     }
 }

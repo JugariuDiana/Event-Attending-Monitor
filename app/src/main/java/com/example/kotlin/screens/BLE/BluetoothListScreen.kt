@@ -23,6 +23,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -57,7 +58,6 @@ fun BluetoothListScreen(
                 .fillMaxWidth()
                 .fillMaxHeight()
         ) {
-//        Log.d("bleScan", "devices ${devices.size}")
             LazyColumn(
                 contentPadding = PaddingValues(
                     start = 20.dp,

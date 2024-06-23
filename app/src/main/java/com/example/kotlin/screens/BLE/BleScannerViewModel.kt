@@ -11,6 +11,7 @@ import android.os.Build
 import android.os.Handler
 import android.util.Log
 import androidx.annotation.RequiresApi
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.core.app.ActivityCompat
 import com.example.kotlin.AppViewModel
 import com.example.kotlin.EVENT_DEFAULT_ID
@@ -45,17 +46,23 @@ class BleScannerViewModel @Inject constructor(
     val event = MutableStateFlow(Event(EVENT_DEFAULT_ID, ORGANIZER_DEFAULT_ID))
     private var userInformation = MutableStateFlow(User())
     lateinit var attendees: List<Attendee>
-    lateinit var context: Context
+    lateinit var localContext: Context
 
-    private val _deviceList: MutableStateFlow<List<Attendee>> = MutableStateFlow(emptyList<Attendee>())
+    private val _deviceList: MutableStateFlow<List<Attendee>> = MutableStateFlow(emptyList())
     val deviceList: StateFlow<List<Attendee>> get() = _deviceList.asStateFlow()
-//    val deviceList: Flow<List<Attendee>>
-//        get() = flow {
-//        while (true){
-//            val deviceList = _deviceList.value
-//            delay(100)
-//            emit(deviceList)}
-//    }
+
+    fun addDevice(attendee: Attendee) {
+        val newAttendance = Attendee(attendee.id, attendee.userId, attendee.firstTimeSeen, attendee.lastTimeSeen, attendee.attendees)
+        _deviceList.update {currentList ->
+            val updatedList = currentList.toMutableList()
+            val existingIndex = updatedList.indexOfFirst { it.id == attendee.id }
+            if (existingIndex != -1) {
+                updatedList.removeAt(existingIndex)
+            }
+            updatedList.add(newAttendance)
+            updatedList
+        }
+    }
 
     override fun onCleared() {
         super.onCleared()
@@ -65,7 +72,7 @@ class BleScannerViewModel @Inject constructor(
     private fun stopBleScanning() {
         if (scanning) {
             if (ActivityCompat.checkSelfPermission(
-                    context,
+                    localContext,
                     Manifest.permission.BLUETOOTH_SCAN
                 ) != PackageManager.PERMISSION_GRANTED
             ) {
@@ -93,7 +100,7 @@ class BleScannerViewModel @Inject constructor(
 
     @RequiresApi(Build.VERSION_CODES.S)
     suspend fun scan(context: Context, activity: BLEActivity){
-        this.context = context
+        localContext = context
         while (true) {
             scanLeDevice(context, activity)
             delay(20000) // Must change, maybe scan for 1 minute every five minutes
@@ -232,7 +239,6 @@ class BleScannerViewModel @Inject constructor(
             val scanRecord = result.scanRecord
             val data: String
             val currentUserAttendance = getCurrentUserAttendance()!!
-            var foundAttendees = emptyList<Attendee>()
 
             if (scanRecord != null && scanRecord.serviceUuids != null && scanRecord.serviceUuids.size > 0) {
                 data = scanRecord.serviceUuids[0].toString()
@@ -252,12 +258,6 @@ class BleScannerViewModel @Inject constructor(
                             if (!currentUserAttendance.attendees.contains(data)) {
                                 currentUserAttendance.attendees = currentUserAttendance.attendees + data
                             }
-
-//                            for (foundAttendee in attendance.attendees){
-//                                if (!currentUserAttendance.attendees.contains(foundAttendee)){
-//                                    currentUserAttendance.attendees += foundAttendee
-//                                }
-//                            }
 
                             launchCatching {
                                 storageService.updateAttendee(attendance)
@@ -283,20 +283,4 @@ class BleScannerViewModel @Inject constructor(
             }
         }
     }
-    fun addDevice(attendee: Attendee) {
-        _deviceList.update { currentList ->
-            val existingIndex = currentList.indexOfFirst { it.id == attendee.id }
-            if (existingIndex != -1) {
-                currentList.toMutableList().apply {
-                    this[existingIndex] = attendee
-                }
-            } else {
-                currentList + attendee
-            }
-        }
-    }
-
-//    fun <T> MutableStateFlow<T>.swapList(newList: MutableList<Attendee>){
-//        //Todo - check phone to make sure list update is correct
-//    }
 }
