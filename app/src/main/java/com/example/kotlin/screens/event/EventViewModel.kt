@@ -1,16 +1,20 @@
 package com.example.kotlin.screens.event
 
+import android.os.Build
+import androidx.annotation.RequiresApi
+import com.example.kotlin.AppViewModel
 import com.example.kotlin.EVENT_DEFAULT_ID
 import com.example.kotlin.ORGANIZER_DEFAULT_ID
 import com.example.kotlin.SPLASH_SCREEN
-import com.example.kotlin.storage.AccountService
-import com.example.kotlin.storage.StorageService
 import com.example.kotlin.domain.Attendee
 import com.example.kotlin.domain.Event
 import com.example.kotlin.domain.User
-import com.example.kotlin.AppViewModel
+import com.example.kotlin.storage.AccountService
+import com.example.kotlin.storage.StorageService
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 import java.util.UUID
 import javax.inject.Inject
 
@@ -21,10 +25,24 @@ class EventViewModel @Inject constructor(
 ) : AppViewModel() {
     val event = MutableStateFlow(DEFAULT_EVENT)
     var userInformation = MutableStateFlow(User())
+    var name = MutableStateFlow("")
+    var location = MutableStateFlow("")
+    var availableSeats = MutableStateFlow("")
+    var startTime = MutableStateFlow("0:0")
+    var endTime = MutableStateFlow("0:0")
+    var date = MutableStateFlow("")
+    @RequiresApi(Build.VERSION_CODES.O)
+    val formatted = LocalDate.now().plusDays(1).format(DateTimeFormatter.ofPattern("dd/MM/yyyy"))
 
     fun initialize(eventId: String, restartApp: (String) -> Unit) {
         launchCatching {
             event.value = storageService.readEvent(eventId)!!
+            name.value = event.value.name
+            location.value = event.value.location
+            availableSeats.value = event.value.availableSeats.toString()
+            startTime.value = event.value.startTime
+            endTime.value = event.value.endTime
+            date.value = event.value.date
             userInformation.value = accountService.getUser(accountService.currentUserId)!!
         }
         observeAuthenticationState(restartApp)
@@ -38,8 +56,37 @@ class EventViewModel @Inject constructor(
         }
     }
 
-    fun updateEvent(new: Event) {
-        event.value = new
+    fun updateName(new: String) {
+        name.value = new
+        event.value.name = new
+    }
+
+    fun updateLocation(new: String) {
+        location.value = new
+        event.value.location = new
+    }
+
+    fun updateAvailableSeats(new: Int) {
+//        availableSeats.value = new ?: ""
+        event.value.availableSeats = new
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    fun updateStartTime(new: String) {
+        startTime.value = new
+        event.value.startTime = new
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    fun updateEndTime(new: String) {
+        endTime.value = new
+        event.value.endTime = new
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    fun updateDate(new: String) {
+        date.value = new
+        event.value.date = new
     }
 
     fun register(popUpScreen: () -> Unit) {

@@ -1,6 +1,7 @@
 package com.example.kotlin.screens.event
 
 import android.os.Build
+import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -44,6 +45,8 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.kotlin.MyDatePickerDialog
 import com.example.kotlin.ui.theme.KotlinTheme
+import com.google.type.Date
+import kotlinx.coroutines.flow.MutableStateFlow
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
@@ -68,6 +71,7 @@ fun AddEventScreen(
     var locationValidation by remember { mutableStateOf(true) }
     var availableSeatsValidation by remember { mutableStateOf(true) }
     var timeValidation by remember { mutableStateOf(true) }
+    var dateValidation by remember { mutableStateOf(true) }
 
     fun validateAllFields(){
         nameValidation = name.value.isNotEmpty()
@@ -86,7 +90,7 @@ fun AddEventScreen(
                 IconButton(onClick = {
                     validateAllFields()
                     if (timeValidation && nameValidation && locationValidation &&
-                        availableSeatsValidation){
+                        availableSeatsValidation && dateValidation){
                         viewModel.addEvent(popUpScreen) }
                 }) {
                     Icon(Icons.Filled.Done, "Save event")
@@ -186,9 +190,20 @@ fun AddEventScreen(
 
             if (showDatePicker) {
                 MyDatePickerDialog(
-                    onDateSelected = { viewModel.updateDate(it) },
+                    onDateSelected = { viewModel.updateDate(it)
+                        Log.d("dateValidation", it)
+                                     if (it.equals("")){
+                                         dateValidation = false
+                                     } else {
+                                         dateValidation = true
+                                     }},
                     onDismiss = { showDatePicker = false }
                 )
+            }
+
+            if (!dateValidation){
+                Log.d("dateValidation", date.toString())
+                Text(text = "Date must be after " + viewModel.formatted.toString() , color = Color.Red)
             }
 
             if (showStartTimePicker){

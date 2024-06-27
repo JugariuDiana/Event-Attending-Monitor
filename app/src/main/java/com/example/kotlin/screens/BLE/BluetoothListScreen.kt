@@ -23,58 +23,71 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.kotlin.domain.Attendee
 
 
-@SuppressLint("StateFlowValueCalledInComposition")
+@SuppressLint("StateFlowValueCalledInComposition", "UnusedMaterial3ScaffoldPaddingParameter")
 @RequiresApi(Build.VERSION_CODES.TIRAMISU)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BluetoothListScreen(
     viewModel: BleScannerViewModel = hiltViewModel(),
 ) {
-    val attendees by viewModel.deviceList.collectAsStateWithLifecycle(emptyList())
+//    Scaffold(
+//        floatingActionButton = {
+//            FloatingActionButton(
+//                onClick = { GlobalScope.launch {
+//                    viewModel.scan(viewModel.localContext, viewModel.localBLEActivity)
+//                } },
+//                modifier = Modifier.padding(16.dp),
+//                containerColor = Purple40,
+//                shape = RoundedCornerShape(16.dp)
+//            ) {
+//                Icon(Icons.Filled.Replay, "Scan")
+//            }
+//        }
+//    ) {
+        val attendees by viewModel.deviceList.collectAsStateWithLifecycle(emptyList())
 
-    Column(modifier = Modifier
-        .fillMaxWidth()
-        .fillMaxHeight()) {
-        TopAppBar(
-            title = { Text("${viewModel.event.value.name} -> ${viewModel.event.value.location} : Participants") },
-        )
-
-        Spacer(modifier = Modifier
+        Column(modifier = Modifier
             .fillMaxWidth()
-            .padding(12.dp))
+            .fillMaxHeight()) {
+            TopAppBar(
+                title = { Text("${viewModel.event.value.name} -> ${viewModel.event.value.location} : Participants") },
+            )
 
-        Column(
-            modifier = Modifier
+            Spacer(modifier = Modifier
                 .fillMaxWidth()
-                .fillMaxHeight()
-        ) {
-            LazyColumn(
-                contentPadding = PaddingValues(
-                    start = 20.dp,
-                    end = 20.dp,
-                    top = 15.dp,
-                    bottom = 15.dp
-                )
+                .padding(12.dp))
+
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .fillMaxHeight()
             ) {
-                items(attendees) { attendee ->
-                    AttendanceItem(
-                        viewModel = viewModel,
-                        attendee = attendee
+                LazyColumn(
+                    contentPadding = PaddingValues(
+                        start = 20.dp,
+                        end = 20.dp,
+                        top = 15.dp,
+                        bottom = 15.dp
                     )
+                ) {
+                    items(attendees) { attendee ->
+                        AttendanceItem(
+                            viewModel = viewModel,
+                            attendee = attendee
+                        )
+                    }
                 }
             }
         }
-    }
+//    }
 }
 
 @Composable

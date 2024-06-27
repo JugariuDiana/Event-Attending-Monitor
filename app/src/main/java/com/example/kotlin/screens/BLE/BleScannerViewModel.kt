@@ -1,6 +1,7 @@
 package com.example.kotlin.screens.BLE
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.le.BluetoothLeScanner
 import android.bluetooth.le.ScanCallback
@@ -11,7 +12,6 @@ import android.os.Build
 import android.os.Handler
 import android.util.Log
 import androidx.annotation.RequiresApi
-import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.core.app.ActivityCompat
 import com.example.kotlin.AppViewModel
 import com.example.kotlin.EVENT_DEFAULT_ID
@@ -46,7 +46,10 @@ class BleScannerViewModel @Inject constructor(
     val event = MutableStateFlow(Event(EVENT_DEFAULT_ID, ORGANIZER_DEFAULT_ID))
     private var userInformation = MutableStateFlow(User())
     lateinit var attendees: List<Attendee>
+    @SuppressLint("StaticFieldLeak")
     lateinit var localContext: Context
+    @SuppressLint("StaticFieldLeak")
+    lateinit var localBLEActivity: BLEActivity
 
     private val _deviceList: MutableStateFlow<List<Attendee>> = MutableStateFlow(emptyList())
     val deviceList: StateFlow<List<Attendee>> get() = _deviceList.asStateFlow()
@@ -101,15 +104,16 @@ class BleScannerViewModel @Inject constructor(
     @RequiresApi(Build.VERSION_CODES.S)
     suspend fun scan(context: Context, activity: BLEActivity){
         localContext = context
+        localBLEActivity = activity
         while (true) {
-            scanLeDevice(context, activity)
+            scanLeDevice()
             delay(20000) // Must change, maybe scan for 1 minute every five minutes
             Log.d("dataMonitoring", "start scanning again")
         }
     }
 
     @RequiresApi(Build.VERSION_CODES.S)
-    private fun scanLeDevice(context: Context, activity: BLEActivity) {
+    private fun scanLeDevice() {
         Log.d("bleScan", "scanLeDevice: $scanning")
         Log.d("dataMonitoring", "eventid ->" + event.value.id)
 
@@ -124,12 +128,12 @@ class BleScannerViewModel @Inject constructor(
                 scanning = false
                 Log.d("bleScan", "post delayed")
                 if (ActivityCompat.checkSelfPermission(
-                        context,
+                        localContext,
                         Manifest.permission.BLUETOOTH_SCAN
                     ) != PackageManager.PERMISSION_GRANTED
                 ) {
                     EasyPermissions.requestPermissions(
-                        activity,
+                        localBLEActivity,
                         "Bluetooth and Location permissions",
                         PERMISSION_REQUEST_BLUETOOTH_CODE,
                         Manifest.permission.BLUETOOTH_SCAN,
@@ -137,12 +141,12 @@ class BleScannerViewModel @Inject constructor(
                     return@postDelayed
                 }
                 if (ActivityCompat.checkSelfPermission(
-                        context,
+                        localContext,
                         Manifest.permission.ACCESS_FINE_LOCATION
                     ) != PackageManager.PERMISSION_GRANTED
                 ) {
                     EasyPermissions.requestPermissions(
-                        activity,
+                        localBLEActivity,
                         "Bluetooth and Location permissions",
                         PERMISSION_REQUEST_BLUETOOTH_CODE,
                         Manifest.permission.ACCESS_FINE_LOCATION,
@@ -150,12 +154,12 @@ class BleScannerViewModel @Inject constructor(
                     return@postDelayed
                 }
                 if (ActivityCompat.checkSelfPermission(
-                        context,
+                        localContext,
                         Manifest.permission.ACCESS_COARSE_LOCATION
                     ) != PackageManager.PERMISSION_GRANTED
                 ) {
                     EasyPermissions.requestPermissions(
-                        activity,
+                        localBLEActivity,
                         "Bluetooth and Location permissions",
                         PERMISSION_REQUEST_BLUETOOTH_CODE,
                         Manifest.permission.ACCESS_COARSE_LOCATION,

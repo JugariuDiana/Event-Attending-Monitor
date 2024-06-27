@@ -1,13 +1,13 @@
 package com.example.kotlin
 
-const val LOG_TAG="test-kotlin"
+const val LOG_TAG = "test-kotlin"
 const val LOCALHOST = "10.0.2.2"
 const val AUTH_PORT = 9099
 const val FIRESTORE_PORT = 8080
 
 const val EVENT_LIST_SCREEN = "EventListScreen"
-const val BLUETOOTH_LIST_SCREEN = "BluetoothListScreen"
 const val EVENT_SCREEN = "EventScreen"
+const val END_EVENT_SCREEN = "EndEventScreen"
 const val BLE_ACTIVITY = "BLEActivity"
 const val UNREGISTER_EVENT_SCREEN = "UnregisterEventScreen"
 const val REGISTER_EVENT_SCREEN = "RegisterEventScreen"
