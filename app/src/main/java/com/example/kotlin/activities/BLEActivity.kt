@@ -70,46 +70,6 @@ class BLEActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks{
     private var currentCallback: AdvertisingSetCallback? = null
     private lateinit var parcelUuid: ParcelUuid
 
-//    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
-//    private var advertisingCallback: AdvertisingSetCallback = object : AdvertisingSetCallback() {
-//        override fun onAdvertisingSetStarted(advertisingSet: AdvertisingSet, txPower: Int, status: Int) {
-//            Log.i(LOG_TAG, "onAdvertisingSetStarted(): txPower:$txPower, status:$status")
-//            currentAdvertisingSet = advertisingSet
-//            if (ActivityCompat.checkSelfPermission(
-//                    this@BLEActivity,
-//                    Manifest.permission.BLUETOOTH_ADVERTISE
-//                ) != PackageManager.PERMISSION_GRANTED
-//            ) {
-//                EasyPermissions.requestPermissions(
-//                    this@BLEActivity,
-//                    "Bluetooth and Location permissions",
-//                    PERMISSION_REQUEST_BLUETOOTH_CODE,
-//                    Manifest.permission.BLUETOOTH_ADVERTISE
-//                )
-//                return
-//            }
-//
-//            currentAdvertisingSet?.setAdvertisingData(
-//                AdvertiseData.Builder().setIncludeDeviceName(true).setIncludeTxPowerLevel(true).build()
-//            )
-//            currentAdvertisingSet?.setScanResponseData(
-//                AdvertiseData.Builder().addServiceUuid(parcelUuid).build()
-//            )
-//        }
-//
-//        override fun onAdvertisingDataSet(advertisingSet: AdvertisingSet, status: Int) {
-//            Log.i(LOG_TAG, "onAdvertisingDataSet(): status:$status")
-//        }
-//
-//        override fun onScanResponseDataSet(advertisingSet: AdvertisingSet, status: Int) {
-//            Log.i(LOG_TAG, "onScanResponseDataSet(): status:$status")
-//        }
-//
-//        override fun onAdvertisingSetStopped(advertisingSet: AdvertisingSet) {
-//            Log.i(LOG_TAG, "onAdvertisingSetStopped()")
-//        }
-//    }
-
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

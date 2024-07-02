@@ -38,27 +38,16 @@ import com.example.kotlin.domain.Attendee
 fun BluetoothListScreen(
     viewModel: BleScannerViewModel = hiltViewModel(),
 ) {
-//    Scaffold(
-//        floatingActionButton = {
-//            FloatingActionButton(
-//                onClick = { GlobalScope.launch {
-//                    viewModel.scan(viewModel.localContext, viewModel.localBLEActivity)
-//                } },
-//                modifier = Modifier.padding(16.dp),
-//                containerColor = Purple40,
-//                shape = RoundedCornerShape(16.dp)
-//            ) {
-//                Icon(Icons.Filled.Replay, "Scan")
-//            }
-//        }
-//    ) {
         val attendees by viewModel.deviceList.collectAsStateWithLifecycle(emptyList())
+        val event by remember {
+            mutableStateOf(viewModel.event)
+        }
 
         Column(modifier = Modifier
             .fillMaxWidth()
             .fillMaxHeight()) {
             TopAppBar(
-                title = { Text("${viewModel.event.value.name} -> ${viewModel.event.value.location} : Participants") },
+                title = { Text("${event.value.name} ${event.value.location} : Participants") },
             )
 
             Spacer(modifier = Modifier
