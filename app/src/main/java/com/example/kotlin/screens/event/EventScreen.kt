@@ -83,9 +83,7 @@ fun EventScreen(
     fun validateAllFields(){
         nameValidation = name.isNotEmpty()
         locationValidation = location.isNotEmpty()
-        availableSeats.toIntOrNull()?.let {
-            it >= viewModel.event.value.reservedSeats && it > 0
-        } ?: false
+        availableSeatsValidation = availableSeats >= viewModel.event.value.reservedSeats
         timeValidation = isEndTimeValid(startTimeState, endTimeState)
     }
 
@@ -166,10 +164,15 @@ fun EventScreen(
             }
 
             TextField(
-                value = availableSeats,
+                value = availableSeats.toString(),
                 onValueChange = {
-                    availableSeatsValidation = it.toIntOrNull()!! > 0 && it.isNotEmpty()
-                    viewModel.updateAvailableSeats(it.toIntOrNull() ?: 0)
+                    if (it.toIntOrNull() != null){
+                        viewModel.updateAvailableSeats(it.toInt())
+                        availableSeatsValidation = it.toInt() > 0
+                    } else {
+                        viewModel.updateAvailableSeats(0)
+                        availableSeatsValidation = false
+                    }
                 },
                 label = { Text("Number of available seats (only numbers)")},
                 isError = !availableSeatsValidation,
@@ -191,7 +194,7 @@ fun EventScreen(
             }
 
             Button(onClick = { showDatePicker = true }) {
-                Text(text = "Date: " + date)
+                Text(text = "Date: $date")
             }
 
             if (showDatePicker) {

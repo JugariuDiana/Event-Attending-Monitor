@@ -27,9 +27,9 @@ class EventViewModel @Inject constructor(
     var userInformation = MutableStateFlow(User())
     var name = MutableStateFlow("")
     var location = MutableStateFlow("")
-    var availableSeats = MutableStateFlow("")
-    var startTime = MutableStateFlow("0:0")
-    var endTime = MutableStateFlow("0:0")
+    var availableSeats = MutableStateFlow(0)
+    var startTime = MutableStateFlow("8:30")
+    var endTime = MutableStateFlow("11:30")
     var date = MutableStateFlow("")
     @RequiresApi(Build.VERSION_CODES.O)
     val formatted = LocalDate.now().plusDays(1).format(DateTimeFormatter.ofPattern("dd/MM/yyyy"))
@@ -39,7 +39,7 @@ class EventViewModel @Inject constructor(
             event.value = storageService.readEvent(eventId)!!
             name.value = event.value.name
             location.value = event.value.location
-            availableSeats.value = event.value.availableSeats.toString()
+            availableSeats.value = event.value.availableSeats
             startTime.value = event.value.startTime
             endTime.value = event.value.endTime
             date.value = event.value.date
@@ -67,7 +67,7 @@ class EventViewModel @Inject constructor(
     }
 
     fun updateAvailableSeats(new: Int) {
-//        availableSeats.value = new ?: ""
+        availableSeats.value = new
         event.value.availableSeats = new
     }
 
