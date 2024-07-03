@@ -105,6 +105,10 @@ class StorageServiceImpl @Inject constructor(private val auth: AccountService) :
         return listAttendee
     }
 
+    override suspend fun getUser(userId : String): User? {
+        return database.child(USERS_COLLECTION).child(userId).get().await().getValue(User::class.java)
+    }
+
     override suspend fun createAttendee(attendee: Attendee) {
         database.child(ATTENDEES_COLLECTION).child(attendee.id).setValue(attendee)
     }

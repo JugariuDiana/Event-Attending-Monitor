@@ -1,10 +1,8 @@
 package com.example.kotlin.screens.BLE
 
+import android.annotation.SuppressLint
 import android.os.Build
-import android.util.Log
 import androidx.annotation.RequiresApi
-import androidx.compose.animation.animateContentSize
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -23,61 +21,62 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.kotlin.domain.Attendee
 
 
+@SuppressLint("StateFlowValueCalledInComposition", "UnusedMaterial3ScaffoldPaddingParameter")
 @RequiresApi(Build.VERSION_CODES.TIRAMISU)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BluetoothListScreen(
     viewModel: BleScannerViewModel = hiltViewModel(),
 ) {
-    val attendees by viewModel.deviceList.collectAsStateWithLifecycle(emptyList())
-//    LaunchedEffect(Unit) { viewModel.initialize(eventId, restartApp) }
+        val attendees by viewModel.deviceList.collectAsStateWithLifecycle(emptyList())
+        val event by remember {
+            mutableStateOf(viewModel.event)
+        }
 
-    Column(modifier = Modifier
-        .fillMaxWidth()
-        .fillMaxHeight()) {
-        TopAppBar(
-            title = { Text("Participants") },
-        )
-
-        Spacer(modifier = Modifier
+        Column(modifier = Modifier
             .fillMaxWidth()
-            .padding(12.dp))
+            .fillMaxHeight()) {
+            TopAppBar(
+                title = { Text("${event.value.name} ${event.value.location} : Participants") },
+            )
 
-        Column(
-            modifier = Modifier
+            Spacer(modifier = Modifier
                 .fillMaxWidth()
-                .fillMaxHeight()
-        ) {
-//        Log.d("bleScan", "devices ${devices.size}")
-            LazyColumn(
-                contentPadding = PaddingValues(
-                    start = 20.dp,
-                    end = 20.dp,
-                    top = 15.dp,
-                    bottom = 15.dp
-                )
+                .padding(12.dp))
+
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .fillMaxHeight()
             ) {
-                items(attendees) { attendee ->
-                    AttendanceItem(
-                        viewModel = viewModel,
-                        attendee = attendee
+                LazyColumn(
+                    contentPadding = PaddingValues(
+                        start = 20.dp,
+                        end = 20.dp,
+                        top = 15.dp,
+                        bottom = 15.dp
                     )
+                ) {
+                    items(attendees) { attendee ->
+                        AttendanceItem(
+                            viewModel = viewModel,
+                            attendee = attendee
+                        )
+                    }
                 }
             }
         }
-    }
+//    }
 }
 
 @Composable

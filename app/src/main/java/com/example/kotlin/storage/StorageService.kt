@@ -12,6 +12,7 @@ interface StorageService {
 
     suspend fun getUsersAttendance(userId: String, attendances: List<String>): String
     suspend fun getEventAttendees(attendances: List<String>): List<Attendee>
+    suspend fun getUser(userId: String): User?
     suspend fun createEvent(event: Event)
     suspend fun createAttendee(attendee: Attendee)
     suspend fun readEvent(eventId: String): Event?

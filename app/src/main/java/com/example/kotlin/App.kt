@@ -22,6 +22,7 @@ import com.example.kotlin.activities.BLEActivity
 import com.example.kotlin.screens.BLE.BluetoothListScreen
 import com.example.kotlin.screens.SignIn.SignInScreen
 import com.example.kotlin.screens.event.AddEventScreen
+import com.example.kotlin.screens.event.EndEventScreen
 import com.example.kotlin.screens.event.EventScreen
 import com.example.kotlin.screens.event.RegisterEventScreen
 import com.example.kotlin.screens.event.UnregisterEventScreen
@@ -59,25 +60,22 @@ fun rememberAppState(navController: NavHostController = rememberNavController())
 @RequiresApi(Build.VERSION_CODES.TIRAMISU)
 fun NavGraphBuilder.AppGraph(appState: AppState) {
 
-//    composable(
-//        route = "$EVENT_SCREEN/{$EVENT_ID}",
-//        arguments = listOf(navArgument(EVENT_ID) {type = NavType.StringType})
-//    ) {backStackEntry ->
-//        val eventId = backStackEntry.arguments?.getString(EVENT_ID)
-//        if (eventId != null) {
-//            EventScreen(
-//                eventId = eventId, //it.arguments?.getString(EVENT_ID) ?: "",
-//                popUpScreen = { appState.popUp() },
-//                restartApp = { route -> appState.clearAndNavigate(route)
-//                    Log.d("route", route) }
-//            )
-//        }
-//    }
     composable(
         route = "$EVENT_SCREEN/{$EVENT_ID}",
         arguments = listOf(navArgument(EVENT_ID) {defaultValue = ""})
     ) {
         EventScreen(
+            eventId = it.arguments?.getString(EVENT_ID) ?: "",
+            popUpScreen = { appState.popUp() },
+            restartApp = { route -> appState.clearAndNavigate(route) }
+        )
+    }
+
+    composable(
+        route = "$END_EVENT_SCREEN/{$EVENT_ID}",
+        arguments = listOf(navArgument(EVENT_ID) {defaultValue = ""})
+    ) {
+        EndEventScreen(
             eventId = it.arguments?.getString(EVENT_ID) ?: "",
             popUpScreen = { appState.popUp() },
             restartApp = { route -> appState.clearAndNavigate(route) }
@@ -101,17 +99,6 @@ fun NavGraphBuilder.AppGraph(appState: AppState) {
         argument("eventId"){type = NavType.StringType}
         activityClass = BLEActivity::class
     }
-
-//    composable(
-//        route = "$BLUETOOTH_LIST_SCREEN/{$EVENT_ID}",
-//        arguments = listOf(navArgument(EVENT_ID) {defaultValue = ""})
-//    ) {
-//        BluetoothListScreen(
-//            eventId = it.arguments?.getString(EVENT_ID) ?: "",
-//            popUpScreen = { appState.popUp() },
-//            restartApp = { route -> appState.clearAndNavigate(route) }
-//        )
-//    }
 
     composable(
         route = "$REGISTER_EVENT_SCREEN/{$EVENT_ID}",

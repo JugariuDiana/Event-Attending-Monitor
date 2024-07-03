@@ -1,5 +1,9 @@
 package com.example.kotlin.screens.event
 
+import android.annotation.SuppressLint
+import android.os.Build
+import android.util.Log
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -46,6 +50,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.kotlin.MyDatePickerDialog
 import com.example.kotlin.ui.theme.KotlinTheme
 
+@RequiresApi(Build.VERSION_CODES.O)
+@SuppressLint("StateFlowValueCalledInComposition")
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
 fun EventScreen(
@@ -55,9 +61,12 @@ fun EventScreen(
     modifier: Modifier = Modifier,
     viewModel: EventViewModel = hiltViewModel()
 ) {
-    val event = viewModel.event.collectAsState()
-    val startTimeState = rememberTimePickerState(12, 30, true)
-    val endTimeState = rememberTimePickerState(startTimeState.hour + 1, 30, true)
+    val name by viewModel.name.collectAsState()
+    val location by viewModel.location.collectAsState()
+    val availableSeats by viewModel.availableSeats.collectAsState()
+    val date by viewModel.date.collectAsState()
+    val startTimeState = rememberTimePickerState(viewModel.startTime.value.split(":")[0].toInt(), viewModel.startTime.value.split(":")[1].toInt(), true)
+    val endTimeState = rememberTimePickerState(viewModel.endTime.value.split(":")[0].toInt(), viewModel.endTime.value.split(":")[1].toInt(), true)
 
     LaunchedEffect(Unit) { viewModel.initialize(eventId, restartApp) }
 
@@ -65,16 +74,16 @@ fun EventScreen(
     var locationValidation by remember { mutableStateOf(true) }
     var availableSeatsValidation by remember { mutableStateOf(true) }
     var timeValidation by remember { mutableStateOf(true) }
+    var dateValidation by remember { mutableStateOf(true) }
 
     var showStartTimePicker by remember { mutableStateOf(false) }
     var showEndTimePicker by remember { mutableStateOf(false) }
     var showDatePicker by remember { mutableStateOf(false) }
 
     fun validateAllFields(){
-        nameValidation = event.value.name.isNotEmpty()
-        locationValidation = event.value.location.isNotEmpty()
-        availableSeatsValidation = event.value.availableSeats != 0 &&
-                event.value.availableSeats >= event.value.reservedSeats
+        nameValidation = name.isNotEmpty()
+        locationValidation = location.isNotEmpty()
+        availableSeatsValidation = availableSeats >= viewModel.event.value.reservedSeats
         timeValidation = isEndTimeValid(startTimeState, endTimeState)
     }
 
@@ -112,10 +121,9 @@ fun EventScreen(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             TextField(
-                value = event.value.name,
+                value = name,
                 onValueChange = {
-                    event.value.name = it
-                    viewModel.updateEvent(event.value)
+                    viewModel.updateName(it)
                     nameValidation = it.isNotBlank() },
                 label = { Text("Event name")},
                 isError = !nameValidation,
@@ -135,10 +143,9 @@ fun EventScreen(
             }
 
             TextField(
-                value = event.value.location,
+                value = location,
                 onValueChange = {
-                    event.value.location = it
-                    viewModel.updateEvent(event.value)
+                    viewModel.updateLocation(it)
                     locationValidation = it.isNotBlank()},
                 label = { Text("Event location")},
                 isError = !locationValidation,
@@ -157,15 +164,13 @@ fun EventScreen(
             }
 
             TextField(
-                value = event.value.availableSeats.toString(),
+                value = availableSeats.toString(),
                 onValueChange = {
                     if (it.toIntOrNull() != null){
-                        event.value.availableSeats = it.toInt()
-                        viewModel.updateEvent(event.value)
-                        availableSeatsValidation = it.toInt() > 0 && it.toInt() >= event.value.reservedSeats
+                        viewModel.updateAvailableSeats(it.toInt())
+                        availableSeatsValidation = it.toInt() > 0
                     } else {
-                        event.value.availableSeats = event.value.reservedSeats
-                        viewModel.updateEvent(event.value)
+                        viewModel.updateAvailableSeats(0)
                         availableSeatsValidation = false
                     }
                 },
@@ -185,33 +190,29 @@ fun EventScreen(
             )
 
             if (!availableSeatsValidation){
-                Text(text = "Available seats must be a number (bigger than reserved seats)", color = Color.Red)
+                Text(text = "Available seats must be a number (bigger than 0)", color = Color.Red)
             }
 
-            TextField(
-                value = event.value.reservedSeats.toString(),
-                label = { Text("Reserved seats")},
-                onValueChange = {},
-                modifier = modifier
-                    .fillMaxWidth()
-                    .wrapContentHeight(),
-                colors = TextFieldDefaults.textFieldColors(
-                    containerColor = Color.Transparent,
-                    focusedIndicatorColor = Color.Transparent,
-                    unfocusedIndicatorColor = Color.Transparent
-                )
-            )
-
             Button(onClick = { showDatePicker = true }) {
-                Text(text = "Date: " + event.value.date)
+                Text(text = "Date: $date")
             }
 
             if (showDatePicker) {
                 MyDatePickerDialog(
-                    onDateSelected = { event.value.date = it
-                        viewModel.updateEvent(event.value) },
+                    onDateSelected = { viewModel.updateDate(it)
+                        Log.d("dateValidation", it)
+                        if (it.equals("")){
+                            dateValidation = false
+                        } else {
+                            dateValidation = true
+                        }},
                     onDismiss = { showDatePicker = false }
                 )
+            }
+
+            if (!dateValidation){
+                Log.d("dateValidation", date.toString())
+                Text(text = "Date must be after " + viewModel.formatted.toString() , color = Color.Red)
             }
 
             if (showStartTimePicker){
@@ -238,8 +239,7 @@ fun EventScreen(
                             TextButton(onClick = {
                                 showStartTimePicker = false
                                 timeValidation = isEndTimeValid(startTimeState, endTimeState)
-                                event.value.startTime = "${startTimeState.hour}:${startTimeState.minute}"
-                                viewModel.updateEvent(event.value)
+                                viewModel.updateStartTime("${startTimeState.hour}:${startTimeState.minute}")
                             }) {
                                 Text(text = "Confirm")
                             }
@@ -278,8 +278,7 @@ fun EventScreen(
                             TextButton(onClick = {
                                 showEndTimePicker = false
                                 timeValidation = isEndTimeValid(startTimeState, endTimeState)
-                                event.value.endTime = "${endTimeState.hour}:${endTimeState.minute}"
-                                viewModel.updateEvent(event.value)
+                                viewModel.updateEndTime("${endTimeState.hour}:${endTimeState.minute}")
                             }) {
                                 Text(text = "Confirm")
                             }
@@ -307,6 +306,7 @@ private fun isEndTimeValid(startTimeState: TimePickerState, endTimeState: TimePi
             (endTimeState.hour == startTimeState.hour && endTimeState.minute > startTimeState.minute)
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
 fun EventPreview() {

@@ -180,7 +180,7 @@ fun EventItem(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
                 .fillMaxWidth()
-                .clickable { onActionClick(event.id) }
+                .clickable {  onActionClick(event.id) }
         ) {
             Text(
                 text = event.getName() + "->" + event.location,
